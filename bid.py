@@ -1,10 +1,27 @@
 import math
+import requests
 
-PRICE_RANGE = range(100, 121)
+def fetch_moex_last_price(ticker: str) -> int:
+    """Return last traded price for the given ticker from MOEX."""
+    url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{ticker}.json"
+    r = requests.get(url, timeout=10)
+    data = r.json()
+    market_data = data['marketdata']['data'][0]
+    idx = data['marketdata']['columns'].index('LAST')
+    return round(float(market_data[idx]))
+
+try:
+    CENTER_PRICE = fetch_moex_last_price("SBER")
+except Exception as e:
+    print(f"Ошибка при получении цены: {e}")
+    CENTER_PRICE = 110
+
+PRICE_RANGE = range(CENTER_PRICE - 10, CENTER_PRICE + 11)
 
 def probability(x: float) -> float:
+    """Return base probability for the given price."""
     numerator = 100
-    denominator = ((x - 110) / 4) ** 4 + 1
+    denominator = ((x - CENTER_PRICE) / 4) ** 4 + 1
     return numerator / denominator
 
 def initialize_table():
@@ -93,8 +110,8 @@ def main():
                             break
                 else:
                     left, right = sorted((int(parts[0]), int(parts[1])))
-                    if left >= 110 or right <= 110:
-                        print("Неправильный диапазон: левая граница должна быть < 110, правая > 110.")
+                    if left >= CENTER_PRICE or right <= CENTER_PRICE:
+                        print(f"Неправильный диапазон: левая граница должна быть < {CENTER_PRICE}, правая > {CENTER_PRICE}.")
                         continue
                     p1 = get_prob(table, left)
                     p2 = get_prob(table, right)
