@@ -410,7 +410,13 @@ history_frame = ctk.CTkFrame(main_container); ux.style_frame(history_frame)
 history_textbox = ctk.CTkTextbox(history_frame, width=460, height=400)
 ux.style_textbox(history_textbox)
 history_textbox.pack(padx=10, pady=10)
-history_textbox.tag_config("win", font=(ux.FONT_FAMILY, 12, "bold"), foreground=ux.ACCENT_COLOR)
+
+# customtkinter forbids setting fonts via `tag_config`, therefore
+# configure the color through the public API and apply the font on
+# the underlying tkinter.Text widget.
+bold_font = ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold")
+history_textbox.tag_config("win", foreground=ux.ACCENT_COLOR)
+history_textbox._textbox.tag_config("win", font=bold_font)
 history_textbox.tag_config("sep", foreground=ux.BORDER_COLOR)
 
 info_frame = ctk.CTkFrame(main_container); ux.style_frame(info_frame)
