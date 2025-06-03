@@ -18,3 +18,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+print("привет мир")
+print("привет земля")
+
+number = float(input())
+print("коэффициент:", 100 / number)
