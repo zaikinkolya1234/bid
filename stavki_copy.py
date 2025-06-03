@@ -237,13 +237,13 @@ def update_history_view():
     history_textbox.delete("1.0", "end")
     hist = get_history()
     for h in hist:
-        history_text = (
-            f"{h['timestamp']} — {h['company']} | {h['bet_type']} | "
-            f"Ставка: {h['amount']} на {h['range']} "
-            f"(Коэффициент: {h['coefficient']})\n"
-        )
-        history_textbox.insert("1.0", history_text)
-    if not hist: history_textbox.insert("1.0", "История пуста.")
+        history_textbox.insert("end", f"{h['timestamp']} — {h['company']} | {h['bet_type']}\n")
+        history_textbox.insert("end", f"Ставка: {h['amount']} на {h['range']} (Коэффициент: {h['coefficient']})\n")
+        win = format_amount(h['amount'] * h['coefficient'])
+        history_textbox.insert("end", f"Возможный выигрыш: {win}\n", "win")
+        history_textbox.insert("end", "\u2014" * 40 + "\n", "sep")
+    if not hist:
+        history_textbox.insert("1.0", "История пуста.")
     history_textbox.configure(state="disabled")
 
 def update_bet_table():
@@ -403,11 +403,15 @@ ctk.CTkButton(frame_bet, text="Сделать ставку", command=on_bet_clic
 
 mono = ctk.CTkFont(family="Courier New", size=12)
 table_frame = ctk.CTkFrame(right_side); ux.style_frame(table_frame); table_frame.pack(pady=10)
-table_textbox = ctk.CTkTextbox(table_frame, width=460, height=150); ux.style_textbox(table_textbox)
+table_textbox = ctk.CTkTextbox(table_frame, width=460, height=340); ux.style_textbox(table_textbox)
 table_textbox.configure(font=mono); table_textbox.pack()
 
 history_frame = ctk.CTkFrame(main_container); ux.style_frame(history_frame)
-history_textbox = ctk.CTkTextbox(history_frame, width=460, height=400); ux.style_textbox(history_textbox); history_textbox.pack(padx=10, pady=10)
+history_textbox = ctk.CTkTextbox(history_frame, width=460, height=400)
+ux.style_textbox(history_textbox)
+history_textbox.pack(padx=10, pady=10)
+history_textbox.tag_configure("win", font=(ux.FONT_FAMILY, 12, "bold"), foreground=ux.ACCENT_COLOR)
+history_textbox.tag_configure("sep", foreground=ux.BORDER_COLOR)
 
 info_frame = ctk.CTkFrame(main_container); ux.style_frame(info_frame)
 info_textbox = ctk.CTkTextbox(info_frame, width=460, height=400); ux.style_textbox(info_textbox); info_textbox.pack(padx=10, pady=10)
