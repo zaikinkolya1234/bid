@@ -86,13 +86,11 @@ def open_bid_window():
     ctk.set_appearance_mode("dark")
     root = ctk.CTk()
     root.title("Ставки")
-    root.geometry("500x400")
+    root.geometry("500x500")
 
-    tabview = ctk.CTkTabview(root)
-    tabview.pack(fill="both", expand=True, padx=10, pady=10)
-
-    range_tab = tabview.add("Диапазон")
-    price_tab = tabview.add("Достижение цены")
+    # --- layout helpers ---
+    def add_row(widget, **pack_opts):
+        widget.pack(fill="x", pady=5, padx=10, **pack_opts)
 
     min_val = PRICE_RANGE.start
     max_val = PRICE_RANGE.stop - 1
@@ -110,9 +108,14 @@ def open_bid_window():
             canv.create_line(x, 20, x, 30, fill=ux.TEXT_COLOR)
             canv.create_text(x, 40, text=str(i), fill=ux.TEXT_COLOR, font=(ux.FONT_FAMILY, 8))
 
-    # --- Range tab ---
-    canvas_range = tk.Canvas(range_tab, width=width + 2 * padding, height=60, bg=ux.BG_COLOR, highlightthickness=0)
-    canvas_range.pack(pady=5)
+    # --- Range selection ---
+    lbl_range = ctk.CTkLabel(root, text="Выбор диапазона")
+    ux.style_label(lbl_range, 12)
+    add_row(lbl_range)
+
+    canvas_range = tk.Canvas(root, width=width + 2 * padding, height=60,
+                             bg=ux.BG_COLOR, highlightthickness=0)
+    add_row(canvas_range)
     draw_axis(canvas_range)
 
     left_marker = canvas_range.create_rectangle(val_to_x(CENTER_PRICE - 2), 15,
@@ -122,17 +125,20 @@ def open_bid_window():
                                                  val_to_x(CENTER_PRICE + 2) + marker_w, 35,
                                                  fill=ux.ACCENT_COLOR, tags="right")
 
-    range_value = ctk.CTkLabel(range_tab, text="—")
+    frame_range_info = ctk.CTkFrame(root, fg_color="transparent")
+    add_row(frame_range_info)
+    range_value = ctk.CTkLabel(frame_range_info, text="—")
     ux.style_label(range_value)
-    range_value.pack(pady=2)
-
-    coef_label_range = ctk.CTkLabel(range_tab, text="-")
+    range_value.pack(side="left")
+    coef_label_range = ctk.CTkLabel(frame_range_info, text="-")
     ux.style_label(coef_label_range)
-    coef_label_range.pack(pady=2)
+    coef_label_range.pack(side="right")
 
-    entry_range = ctk.CTkEntry(range_tab, width=100)
+    frame_range_bet = ctk.CTkFrame(root, fg_color="transparent")
+    add_row(frame_range_bet)
+    entry_range = ctk.CTkEntry(frame_range_bet, width=120)
     ux.style_entry(entry_range)
-    entry_range.pack(pady=5)
+    entry_range.pack(side="left")
 
     def update_range_coef():
         v1 = x_to_val(canvas_range.coords(left_marker)[0])
@@ -205,30 +211,39 @@ def open_bid_window():
         except Exception:
             pass
 
-    btn_range = ctk.CTkButton(range_tab, text="Сделать ставку", command=place_range_bet)
+    btn_range = ctk.CTkButton(frame_range_bet, text="Сделать ставку", command=place_range_bet)
     ux.style_button(btn_range)
-    btn_range.pack(pady=5)
+    btn_range.pack(side="right", padx=5)
 
-    # --- Price tab ---
-    canvas_price = tk.Canvas(price_tab, width=width + 2 * padding, height=60, bg=ux.BG_COLOR, highlightthickness=0)
-    canvas_price.pack(pady=5)
+    # --- Price selection ---
+    lbl_price = ctk.CTkLabel(root, text="Достижение цены")
+    ux.style_label(lbl_price, 12)
+    add_row(lbl_price)
+
+    canvas_price = tk.Canvas(root, width=width + 2 * padding, height=60,
+                             bg=ux.BG_COLOR, highlightthickness=0)
+    add_row(canvas_price)
     draw_axis(canvas_price)
 
     marker = canvas_price.create_rectangle(val_to_x(CENTER_PRICE), 15,
                                            val_to_x(CENTER_PRICE) + marker_w, 35,
                                            fill=ux.ACCENT_COLOR, tags="marker")
 
-    price_value = ctk.CTkLabel(price_tab, text="-")
+    frame_price_info = ctk.CTkFrame(root, fg_color="transparent")
+    add_row(frame_price_info)
+    price_value = ctk.CTkLabel(frame_price_info, text="-")
     ux.style_label(price_value)
-    price_value.pack(pady=2)
+    price_value.pack(side="left")
 
-    coef_label_price = ctk.CTkLabel(price_tab, text="-")
+    coef_label_price = ctk.CTkLabel(frame_price_info, text="-")
     ux.style_label(coef_label_price)
-    coef_label_price.pack(pady=2)
+    coef_label_price.pack(side="right")
 
-    entry_price = ctk.CTkEntry(price_tab, width=100)
+    frame_price_bet = ctk.CTkFrame(root, fg_color="transparent")
+    add_row(frame_price_bet)
+    entry_price = ctk.CTkEntry(frame_price_bet, width=120)
     ux.style_entry(entry_price)
-    entry_price.pack(pady=5)
+    entry_price.pack(side="left")
 
     def update_price_coef():
         v = x_to_val(canvas_price.coords(marker)[0])
@@ -259,9 +274,9 @@ def open_bid_window():
         except Exception:
             pass
 
-    btn_price = ctk.CTkButton(price_tab, text="Сделать ставку", command=place_price_bet)
+    btn_price = ctk.CTkButton(frame_price_bet, text="Сделать ставку", command=place_price_bet)
     ux.style_button(btn_price)
-    btn_price.pack(pady=5)
+    btn_price.pack(side="right", padx=5)
 
     root.mainloop()
 
