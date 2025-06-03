@@ -1,5 +1,8 @@
 import math
 import requests
+import customtkinter as ctk
+import tkinter as tk
+import stavki_ux as ux
 
 def fetch_moex_last_price(ticker: str) -> int:
     """Return last traded price for the given ticker from MOEX."""
@@ -76,6 +79,168 @@ def process_express(table, price1, price2, amount):
     update_bet(table, price1, amount * w1, bet_type='нет')
     update_bet(table, price2, amount * w2, bet_type='нет')
 
+def open_bid_window():
+    """Open graphical interface for placing bets on price range or target."""
+    table = initialize_table()
+
+    ctk.set_appearance_mode("dark")
+    root = ctk.CTk()
+    root.title("Ставки")
+    root.geometry("500x400")
+
+    tabview = ctk.CTkTabview(root)
+    tabview.pack(fill="both", expand=True, padx=10, pady=10)
+
+    range_tab = tabview.add("Диапазон")
+    price_tab = tabview.add("Достижение цены")
+
+    min_val = PRICE_RANGE.start
+    max_val = PRICE_RANGE.stop - 1
+    padding = 10
+    width = 320
+    marker_w = 6
+    unit = width / (max_val - min_val)
+    val_to_x = lambda v: int((v - min_val) * unit) + padding
+    x_to_val = lambda x: int(round((x - padding) / unit + min_val))
+
+    def draw_axis(canv):
+        canv.create_line(padding, 25, width + padding, 25, width=2, fill=ux.TEXT_COLOR)
+        for i in range(min_val, max_val + 1, 2):
+            x = val_to_x(i)
+            canv.create_line(x, 20, x, 30, fill=ux.TEXT_COLOR)
+            canv.create_text(x, 40, text=str(i), fill=ux.TEXT_COLOR, font=(ux.FONT_FAMILY, 8))
+
+    # --- Range tab ---
+    canvas_range = tk.Canvas(range_tab, width=width + 2 * padding, height=60, bg=ux.BG_COLOR, highlightthickness=0)
+    canvas_range.pack(pady=5)
+    draw_axis(canvas_range)
+
+    left_marker = canvas_range.create_rectangle(val_to_x(CENTER_PRICE - 2), 15,
+                                                val_to_x(CENTER_PRICE - 2) + marker_w, 35,
+                                                fill=ux.ACCENT_COLOR, tags="left")
+    right_marker = canvas_range.create_rectangle(val_to_x(CENTER_PRICE + 2), 15,
+                                                 val_to_x(CENTER_PRICE + 2) + marker_w, 35,
+                                                 fill=ux.ACCENT_COLOR, tags="right")
+
+    range_value = ctk.CTkLabel(range_tab, text="—")
+    ux.style_label(range_value)
+    range_value.pack(pady=2)
+
+    coef_label_range = ctk.CTkLabel(range_tab, text="-")
+    ux.style_label(coef_label_range)
+    coef_label_range.pack(pady=2)
+
+    entry_range = ctk.CTkEntry(range_tab, width=100)
+    ux.style_entry(entry_range)
+    entry_range.pack(pady=5)
+
+    def update_range_coef():
+        v1 = x_to_val(canvas_range.coords(left_marker)[0])
+        v2 = x_to_val(canvas_range.coords(right_marker)[0])
+        if v1 > v2:
+            coef_label_range.configure(text="-")
+            range_value.configure(text="—")
+            return
+        p1 = get_prob(table, v1)
+        p2 = get_prob(table, v2)
+        if p1 is None or p2 is None:
+            coef_label_range.configure(text="-")
+            return
+        prob_inside = (1 - p1) * (1 - p2)
+        coef = round(max(1, 95 / (prob_inside * 100)), 2)
+        coef_label_range.configure(text=str(coef))
+        range_value.configure(text=f"{v1}-{v2}")
+
+    def move_marker(event):
+        x = min(max(event.x, padding), width + padding - marker_w)
+        tag = canvas_range.gettags("current")[0]
+        if tag == "left":
+            right_x = canvas_range.coords(right_marker)[0]
+            if x + marker_w > right_x:
+                x = right_x - marker_w
+            canvas_range.coords(left_marker, x, 15, x + marker_w, 35)
+        else:
+            left_x = canvas_range.coords(left_marker)[0]
+            if x < left_x + marker_w:
+                x = left_x + marker_w
+            canvas_range.coords(right_marker, x, 15, x + marker_w, 35)
+        update_range_coef()
+
+    canvas_range.tag_bind("left", "<B1-Motion>", move_marker)
+    canvas_range.tag_bind("right", "<B1-Motion>", move_marker)
+    update_range_coef()
+
+    def place_range_bet():
+        try:
+            amt = float(entry_range.get().replace(',', '.'))
+            v1 = x_to_val(canvas_range.coords(left_marker)[0])
+            v2 = x_to_val(canvas_range.coords(right_marker)[0])
+            process_express(table, v1, v2, amt)
+            recalculate_all_probabilities(table)
+            update_range_coef()
+        except Exception:
+            pass
+
+    btn_range = ctk.CTkButton(range_tab, text="Сделать ставку", command=place_range_bet)
+    ux.style_button(btn_range)
+    btn_range.pack(pady=5)
+
+    # --- Price tab ---
+    canvas_price = tk.Canvas(price_tab, width=width + 2 * padding, height=60, bg=ux.BG_COLOR, highlightthickness=0)
+    canvas_price.pack(pady=5)
+    draw_axis(canvas_price)
+
+    marker = canvas_price.create_rectangle(val_to_x(CENTER_PRICE), 15,
+                                           val_to_x(CENTER_PRICE) + marker_w, 35,
+                                           fill=ux.ACCENT_COLOR, tags="marker")
+
+    price_value = ctk.CTkLabel(price_tab, text="-")
+    ux.style_label(price_value)
+    price_value.pack(pady=2)
+
+    coef_label_price = ctk.CTkLabel(price_tab, text="-")
+    ux.style_label(coef_label_price)
+    coef_label_price.pack(pady=2)
+
+    entry_price = ctk.CTkEntry(price_tab, width=100)
+    ux.style_entry(entry_price)
+    entry_price.pack(pady=5)
+
+    def update_price_coef():
+        v = x_to_val(canvas_price.coords(marker)[0])
+        p = get_prob(table, v)
+        if p is None:
+            coef_label_price.configure(text="-")
+            price_value.configure(text="-")
+            return
+        coef = round(max(1, 95 / (p * 100)), 2)
+        coef_label_price.configure(text=str(coef))
+        price_value.configure(text=str(v))
+
+    def move_price_marker(event):
+        x = min(max(event.x, padding), width + padding - marker_w)
+        canvas_price.coords(marker, x, 15, x + marker_w, 35)
+        update_price_coef()
+
+    canvas_price.tag_bind("marker", "<B1-Motion>", move_price_marker)
+    update_price_coef()
+
+    def place_price_bet():
+        try:
+            amt = float(entry_price.get().replace(',', '.'))
+            v = x_to_val(canvas_price.coords(marker)[0])
+            update_bet(table, v, amt, bet_type='да')
+            recalculate_all_probabilities(table)
+            update_price_coef()
+        except Exception:
+            pass
+
+    btn_price = ctk.CTkButton(price_tab, text="Сделать ставку", command=place_price_bet)
+    ux.style_button(btn_price)
+    btn_price.pack(pady=5)
+
+    root.mainloop()
+
 def main():
     table = initialize_table()
     last_input = None
@@ -127,4 +292,4 @@ def main():
             print(f"Ошибка ввода: {e}")
 
 if __name__ == "__main__":
-    main()
+    open_bid_window()
