@@ -201,8 +201,6 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
     def move_marker(event):
         x = min(max(event.x, padding), width + padding - marker_w)
         tag = canvas_range.gettags("current")[0]
-        center_x = val_to_x(center_price)
-
         if tag == "left":
             right_x = canvas_range.coords(right_marker)[0]
             max_left = min(right_x - marker_w, val_to_x(center_price - 1))

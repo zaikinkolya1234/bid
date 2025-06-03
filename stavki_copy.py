@@ -12,19 +12,10 @@ import matplotlib.pyplot as plt
 import bid
 
 
-def fetch_moex_last_price(ticker):
-    url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{ticker}.json"
-    r = requests.get(url, timeout=10)
-    data = r.json()
-    market_data = data['marketdata']['data'][0]
-    last_price_index = data['marketdata']['columns'].index('LAST')
-    last_price = market_data[last_price_index]
-    return round(float(last_price))
-
 # --- Получение цен и диапазонов ---
 try:
-    sber_price = fetch_moex_last_price("SBER")
-    gazp_price = fetch_moex_last_price("GAZP")
+    sber_price = bid.fetch_moex_last_price("SBER")
+    gazp_price = bid.fetch_moex_last_price("GAZP")
 
     CENTER1, MIN1, MAX1 = sber_price, sber_price - 10, sber_price + 10
     CENTER2, MIN2, MAX2 = gazp_price, gazp_price - 10, gazp_price + 10
