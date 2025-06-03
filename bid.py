@@ -82,8 +82,9 @@ def process_express(table, price1, price2, amount):
 def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=None):
     """Open graphical interface for placing bets on price range or target.
 
-    If *parent* is provided, returns a frame with the interface embedded.
-    Otherwise creates a standalone window and starts the mainloop.
+    If *parent* is provided, returns a frame with the interface embedded along
+    with the table frame used for displaying data. Otherwise creates a
+    standalone window and starts the mainloop.
     """
     if center_price is None:
         center_price = DEFAULT_CENTER_PRICE
@@ -364,5 +365,5 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     if root is not None:
         root.mainloop()
     else:
-        return container
+        return container, table_frame
 

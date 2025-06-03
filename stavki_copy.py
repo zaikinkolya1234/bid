@@ -91,6 +91,7 @@ INITIAL_BANK = 10_000_000
 current_type = None
 history = []
 embedded_bid_frame = None
+embedded_bid_table_frame = None
 
 def add_to_history(bet_range, amount, coefficient, bet_type: str):
     company = "Сбербанк" if current_type == 1 else "Газпром"
@@ -284,7 +285,7 @@ for txt, cmd in [("Ставки", lambda: switch_view("bet")), ("История"
     b = ctk.CTkButton(menu, text=txt, command=cmd); ux.style_button(b); b.pack(side="left", padx=10)
 
 def switch_view(view):
-    global current_type, min_val, max_val, unit, embedded_bid_frame
+    global current_type, min_val, max_val, unit, embedded_bid_frame, embedded_bid_table_frame
     for f in [type_select_frame, bet_frame, history_frame, info_frame]:
         f.pack_forget()
     if view == "bet":
@@ -309,7 +310,9 @@ def switch_view(view):
         update_bet_table()
         if embedded_bid_frame:
             embedded_bid_frame.destroy()
-        embedded_bid_frame = bid.open_bid_window(
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame = bid.open_bid_window(
             parent=left_side,
             table_parent=right_side,
             log_bet=lambda r,a,c,kind: add_to_history(r, a, c, kind),
@@ -335,7 +338,9 @@ def switch_view(view):
         update_bet_table()
         if embedded_bid_frame:
             embedded_bid_frame.destroy()
-        embedded_bid_frame = bid.open_bid_window(
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame = bid.open_bid_window(
             parent=left_side,
             table_parent=right_side,
             log_bet=lambda r,a,c,kind: add_to_history(r, a, c, kind),
