@@ -99,15 +99,17 @@ INITIAL_BANK = 10_000_000
 
 current_type = None
 history = []
+embedded_bid_frame = None
 
-def add_to_history(bet_range, amount, coefficient, bet_type=None):
+def add_to_history(bet_range, amount, coefficient, bet_type: str):
     company = "Сбербанк" if current_type == 1 else "Газпром"
     entry = {
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "range": f"{bet_range[0]}–{bet_range[1]}",
         "amount": amount,
         "coefficient": coefficient,
-        "type": company
+        "company": company,
+        "bet_type": bet_type,
     }
     history.append(entry)
 
@@ -219,7 +221,12 @@ def on_bet_click():
         else:
             df_type2 = df_new
         coef = float(coef_value.cget("text"))
-        add_to_history((round(last_range[0] - .51, 2), round(last_range[1] + .50, 2)), amt, coef, f"Тип {current_type}")
+        add_to_history(
+            (round(last_range[0] - .51, 2), round(last_range[1] + .50, 2)),
+            amt,
+            coef,
+            "Диапазон закрытия",
+        )
         update_history_view(); update_coef_label(); update_bet_table(); show_result(amt, coef)
     except Exception as e:
         messagebox.showerror("Ошибка", str(e))
@@ -239,7 +246,12 @@ def update_history_view():
     history_textbox.delete("1.0", "end")
     hist = get_history()
     for h in hist:
-        history_textbox.insert("1.0", f"{h['timestamp']} — Ставка: {h['amount']} на {h['range']} (Коэффициент: {h['coefficient']}, {h.get('type', 'Тип ?')})\n")
+        history_text = (
+            f"{h['timestamp']} — {h['company']} | {h['bet_type']} | "
+            f"Ставка: {h['amount']} на {h['range']} "
+            f"(Коэффициент: {h['coefficient']})\n"
+        )
+        history_textbox.insert("1.0", history_text)
     if not hist: history_textbox.insert("1.0", "История пуста.")
     history_textbox.configure(state="disabled")
 
@@ -281,11 +293,12 @@ for txt, cmd in [("Ставки", lambda: switch_view("bet")), ("История"
     b = ctk.CTkButton(menu, text=txt, command=cmd); ux.style_button(b); b.pack(side="left", padx=10)
 
 def switch_view(view):
-    for f in [type_select_frame, bet_frame, history_frame, info_frame]: f.pack_forget()
+    global current_type, min_val, max_val, unit, embedded_bid_frame
+    for f in [type_select_frame, bet_frame, history_frame, info_frame]:
+        f.pack_forget()
     if view == "bet":
         type_select_frame.pack(fill="both", expand=True)
     elif view == "type1":
-        global current_type, min_val, max_val, unit
         current_type = 1
         min_val, max_val = MIN1, MAX1
         unit = pixel_range / (max_val - min_val)
@@ -303,6 +316,14 @@ def switch_view(view):
         entry_bet.delete(0, 'end')
         update_coef_label()
         update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        embedded_bid_frame = bid.open_bid_window(
+            parent=bet_frame,
+            log_bet=lambda r,a,c,kind: add_to_history(r, a, c, kind),
+            center_price=CENTER1,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
 
     elif view == "type2":
@@ -320,6 +341,14 @@ def switch_view(view):
         entry_bet.delete(0, 'end')
         update_coef_label()
         update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        embedded_bid_frame = bid.open_bid_window(
+            parent=bet_frame,
+            log_bet=lambda r,a,c,kind: add_to_history(r, a, c, kind),
+            center_price=CENTER2,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
     elif view == "history":
         update_history_view(); history_frame.pack(fill="both", expand=True)
@@ -371,9 +400,7 @@ entry_bet = ctk.CTkEntry(frame_bet, width=100); ux.style_entry(entry_bet); entry
 entry_bet.pack(side="left", padx=5); entry_bet.bind("<KeyRelease>", lambda e: format_bet_input())
 ctk.CTkButton(frame_bet, text="Сделать ставку", command=on_bet_click, fg_color=ux.ACCENT_COLOR, hover_color=ux.HOVER_COLOR, text_color=ux.BG_COLOR).pack(side="left", padx=10)
 
-# встроенный интерфейс из bid.py
-embedded_bid_frame = bid.open_bid_window(parent=bet_frame)
-embedded_bid_frame.pack(pady=10, fill="x")
+# встроенный интерфейс из bid.py будет инициализирован при выборе компании
 
 mono = ctk.CTkFont(family="Courier New", size=12)
 table_frame = ctk.CTkFrame(bet_frame); ux.style_frame(table_frame); table_frame.pack(pady=10)
