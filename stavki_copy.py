@@ -9,6 +9,7 @@ import stavki_ux as ux  # ваш модуль интерфейса
 import requests
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
+import bid
 
 
 def fetch_moex_last_price(ticker):
@@ -266,10 +267,16 @@ def draw_axis_labels():
 # --- UI Init ---
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
-root = ctk.CTk(); root.geometry("500x700"); root.title("Ставки на закрытие акций")
+root = ctk.CTk();
+screen_width = root.winfo_screenwidth(); screen_height = root.winfo_screenheight()
+root.geometry(f"{screen_width}x{screen_height}")
+root.title("Ставки на закрытие акций")
 root.configure(fg_color=ux.BG_COLOR)
 
-menu = ctk.CTkFrame(root); ux.style_frame(menu); menu.pack(fill="x", pady=5)
+main_container = ctk.CTkScrollableFrame(root, fg_color=ux.BG_COLOR)
+main_container.pack(fill="both", expand=True)
+
+menu = ctk.CTkFrame(main_container); ux.style_frame(menu); menu.pack(fill="x", pady=5)
 for txt, cmd in [("Ставки", lambda: switch_view("bet")), ("История", lambda: switch_view("history")), ("Информация", lambda: switch_view("info"))]:
     b = ctk.CTkButton(menu, text=txt, command=cmd); ux.style_button(b); b.pack(side="left", padx=10)
 
@@ -323,12 +330,12 @@ def switch_view(view):
 
 
 # --- Frames ---
-type_select_frame = ctk.CTkFrame(root); ux.style_frame(type_select_frame)
+type_select_frame = ctk.CTkFrame(main_container); ux.style_frame(type_select_frame)
 for txt, val in [("Сбербанк", "type1"), ("Газпром", "type2")]:
     b = ctk.CTkButton(type_select_frame, text=txt, command=lambda v=val: switch_view(v))
     ux.style_button(b); b.pack(pady=20)
 
-bet_frame = ctk.CTkFrame(root); ux.style_frame(bet_frame)
+bet_frame = ctk.CTkFrame(main_container); ux.style_frame(bet_frame)
 type_label = ctk.CTkLabel(bet_frame, text="", font=(ux.FONT_FAMILY, 16, "bold"), text_color=ux.ACCENT_COLOR)
 type_label.pack(pady=5)
 chart_frame = ctk.CTkFrame(bet_frame); ux.style_frame(chart_frame); chart_frame.pack(pady=5)
@@ -364,15 +371,19 @@ entry_bet = ctk.CTkEntry(frame_bet, width=100); ux.style_entry(entry_bet); entry
 entry_bet.pack(side="left", padx=5); entry_bet.bind("<KeyRelease>", lambda e: format_bet_input())
 ctk.CTkButton(frame_bet, text="Сделать ставку", command=on_bet_click, fg_color=ux.ACCENT_COLOR, hover_color=ux.HOVER_COLOR, text_color=ux.BG_COLOR).pack(side="left", padx=10)
 
+# встроенный интерфейс из bid.py
+embedded_bid_frame = bid.open_bid_window(parent=bet_frame)
+embedded_bid_frame.pack(pady=10, fill="x")
+
 mono = ctk.CTkFont(family="Courier New", size=12)
 table_frame = ctk.CTkFrame(bet_frame); ux.style_frame(table_frame); table_frame.pack(pady=10)
 table_textbox = ctk.CTkTextbox(table_frame, width=460, height=150); ux.style_textbox(table_textbox)
 table_textbox.configure(font=mono); table_textbox.pack()
 
-history_frame = ctk.CTkFrame(root); ux.style_frame(history_frame)
+history_frame = ctk.CTkFrame(main_container); ux.style_frame(history_frame)
 history_textbox = ctk.CTkTextbox(history_frame, width=460, height=400); ux.style_textbox(history_textbox); history_textbox.pack(padx=10, pady=10)
 
-info_frame = ctk.CTkFrame(root); ux.style_frame(info_frame)
+info_frame = ctk.CTkFrame(main_container); ux.style_frame(info_frame)
 info_textbox = ctk.CTkTextbox(info_frame, width=460, height=400); ux.style_textbox(info_textbox); info_textbox.pack(padx=10, pady=10)
 
 update_coef_label(); update_bet_table()

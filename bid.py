@@ -79,14 +79,23 @@ def process_express(table, price1, price2, amount):
     update_bet(table, price1, amount * w1, bet_type='нет')
     update_bet(table, price2, amount * w2, bet_type='нет')
 
-def open_bid_window():
-    """Open graphical interface for placing bets on price range or target."""
+def open_bid_window(parent=None):
+    """Open graphical interface for placing bets on price range or target.
+
+    If *parent* is provided, returns a frame with the interface embedded.
+    Otherwise creates a standalone window and starts the mainloop.
+    """
     table = initialize_table()
 
     ctk.set_appearance_mode("dark")
-    root = ctk.CTk()
-    root.title("Ставки")
-    root.geometry("500x500")
+    if parent is None:
+        root = ctk.CTk()
+        root.title("Ставки")
+        root.geometry("500x500")
+        container = root
+    else:
+        container = ctk.CTkFrame(parent, fg_color=ux.BG_COLOR)
+        root = None
 
     # --- layout helpers ---
     def add_row(widget, **pack_opts):
@@ -109,11 +118,11 @@ def open_bid_window():
             canv.create_text(x, 40, text=str(i), fill=ux.TEXT_COLOR, font=(ux.FONT_FAMILY, 8))
 
     # --- Range selection ---
-    lbl_range = ctk.CTkLabel(root, text="Выбор диапазона")
+    lbl_range = ctk.CTkLabel(container, text="Выбор диапазона")
     ux.style_label(lbl_range, 12)
     add_row(lbl_range)
 
-    canvas_range = tk.Canvas(root, width=width + 2 * padding, height=60,
+    canvas_range = tk.Canvas(container, width=width + 2 * padding, height=60,
                              bg=ux.BG_COLOR, highlightthickness=0)
     add_row(canvas_range)
     draw_axis(canvas_range)
@@ -125,7 +134,7 @@ def open_bid_window():
                                                  val_to_x(CENTER_PRICE + 2) + marker_w, 35,
                                                  fill=ux.ACCENT_COLOR, tags="right")
 
-    frame_range_info = ctk.CTkFrame(root, fg_color="transparent")
+    frame_range_info = ctk.CTkFrame(container, fg_color="transparent")
     add_row(frame_range_info)
     range_value = ctk.CTkLabel(frame_range_info, text="—")
     ux.style_label(range_value)
@@ -134,7 +143,7 @@ def open_bid_window():
     ux.style_label(coef_label_range)
     coef_label_range.pack(side="right")
 
-    frame_range_bet = ctk.CTkFrame(root, fg_color="transparent")
+    frame_range_bet = ctk.CTkFrame(container, fg_color="transparent")
     add_row(frame_range_bet)
     entry_range = ctk.CTkEntry(frame_range_bet, width=120)
     ux.style_entry(entry_range)
@@ -216,11 +225,11 @@ def open_bid_window():
     btn_range.pack(side="right", padx=5)
 
     # --- Price selection ---
-    lbl_price = ctk.CTkLabel(root, text="Достижение цены")
+    lbl_price = ctk.CTkLabel(container, text="Достижение цены")
     ux.style_label(lbl_price, 12)
     add_row(lbl_price)
 
-    canvas_price = tk.Canvas(root, width=width + 2 * padding, height=60,
+    canvas_price = tk.Canvas(container, width=width + 2 * padding, height=60,
                              bg=ux.BG_COLOR, highlightthickness=0)
     add_row(canvas_price)
     draw_axis(canvas_price)
@@ -229,7 +238,7 @@ def open_bid_window():
                                            val_to_x(CENTER_PRICE) + marker_w, 35,
                                            fill=ux.ACCENT_COLOR, tags="marker")
 
-    frame_price_info = ctk.CTkFrame(root, fg_color="transparent")
+    frame_price_info = ctk.CTkFrame(container, fg_color="transparent")
     add_row(frame_price_info)
     price_value = ctk.CTkLabel(frame_price_info, text="-")
     ux.style_label(price_value)
@@ -239,7 +248,7 @@ def open_bid_window():
     ux.style_label(coef_label_price)
     coef_label_price.pack(side="right")
 
-    frame_price_bet = ctk.CTkFrame(root, fg_color="transparent")
+    frame_price_bet = ctk.CTkFrame(container, fg_color="transparent")
     add_row(frame_price_bet)
     entry_price = ctk.CTkEntry(frame_price_bet, width=120)
     ux.style_entry(entry_price)
@@ -278,7 +287,10 @@ def open_bid_window():
     ux.style_button(btn_price)
     btn_price.pack(side="right", padx=5)
 
-    root.mainloop()
+    if root is not None:
+        root.mainloop()
+    else:
+        return container
 
 def main():
     table = initialize_table()
