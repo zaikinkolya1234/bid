@@ -78,7 +78,7 @@ def process_express(table, price1, price2, amount):
     update_bet(table, price1, amount * w1, bet_type='нет')
     update_bet(table, price2, amount * w2, bet_type='нет')
 
-def open_bid_window(parent=None, log_bet=None, center_price=None):
+def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=None):
     """Open graphical interface for placing bets on price range or target.
 
     If *parent* is provided, returns a frame with the interface embedded.
@@ -90,6 +90,8 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
     price_range = range(center_price - 10, center_price + 11)
     table = initialize_table(center_price)
 
+    format_amount = lambda a: '{:,.2f}'.format(a).replace(',', ' ').replace('.', ',')
+
     ctk.set_appearance_mode("dark")
     if parent is None:
         root = ctk.CTk()
@@ -99,6 +101,9 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
     else:
         container = ctk.CTkFrame(parent, fg_color=ux.BG_COLOR)
         root = None
+
+    if table_parent is None:
+        table_parent = container
 
     # --- layout helpers ---
     def add_row(widget, **pack_opts):
@@ -118,6 +123,18 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
         ux.style_label(val, 12)
         val.pack(padx=6, pady=2)
         return val
+
+    def show_result_popup(amount, coef):
+        win = tk.Toplevel(container)
+        win.title("Результат ставки")
+        win.geometry("300x200")
+        win.configure(bg=ux.BG_COLOR)
+        for txt, fnt, col, pady in [
+            (f"Коэффициент: {coef:.2f}", (ux.FONT_FAMILY, 14), ux.TEXT_COLOR, 10),
+            (f"Возможный выигрыш:\n{format_amount(amount * coef)}", (ux.FONT_FAMILY, 16, 'bold'), ux.ACCENT_COLOR, 10),
+        ]:
+            tk.Label(win, text=txt, font=fnt, fg=col, bg=ux.BG_COLOR, justify="center").pack(pady=pady)
+        tk.Button(win, text="OK", command=win.destroy, font=(ux.FONT_FAMILY, 10), bg="#333", fg=ux.TEXT_COLOR, activebackground=ux.HOVER_COLOR).pack(pady=5)
 
     min_val = price_range.start
     max_val = price_range.stop - 1
@@ -161,9 +178,10 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
     frame_range_bet = ctk.CTkFrame(container)
     ux.style_frame(frame_range_bet)
     add_row(frame_range_bet)
-    entry_range = ctk.CTkEntry(frame_range_bet, width=120)
+    entry_range = ctk.CTkEntry(frame_range_bet, width=100)
     ux.style_entry(entry_range)
-    entry_range.pack(side="left")
+    entry_range.configure(font=(ux.FONT_FAMILY, 12, "bold"))
+    entry_range.pack(side="left", padx=5)
 
     def update_range_coef():
         v1 = x_to_val(canvas_range.coords(left_marker)[0])
@@ -231,12 +249,14 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
             process_express(table, v1, v2, amt)
             recalculate_all_probabilities(table, center_price)
             update_range_coef()
+            update_table()
+            try:
+                coef = float(coef_label_range.cget("text"))
+            except ValueError:
+                coef = 0.0
             if log_bet:
-                try:
-                    coef = float(coef_label_range.cget("text"))
-                except ValueError:
-                    coef = 0.0
                 log_bet((v1, v2), amt, coef, "Выбор диапазона")
+            show_result_popup(amt, coef)
         except Exception:
             pass
 
@@ -267,9 +287,10 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
     frame_price_bet = ctk.CTkFrame(container)
     ux.style_frame(frame_price_bet)
     add_row(frame_price_bet)
-    entry_price = ctk.CTkEntry(frame_price_bet, width=120)
+    entry_price = ctk.CTkEntry(frame_price_bet, width=100)
     ux.style_entry(entry_price)
-    entry_price.pack(side="left")
+    entry_price.configure(font=(ux.FONT_FAMILY, 12, "bold"))
+    entry_price.pack(side="left", padx=5)
 
     def update_price_coef():
         v = x_to_val(canvas_price.coords(marker)[0])
@@ -290,6 +311,25 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
     canvas_price.tag_bind("marker", "<B1-Motion>", move_price_marker)
     update_price_coef()
 
+    table_frame = ctk.CTkFrame(table_parent)
+    ux.style_frame(table_frame)
+    table_frame.pack(pady=10)
+    mono = ctk.CTkFont(family="Courier New", size=12)
+    table_textbox = ctk.CTkTextbox(table_frame, width=460, height=150)
+    ux.style_textbox(table_textbox)
+    table_textbox.configure(font=mono)
+    table_textbox.pack()
+
+    def update_table():
+        lines = [f"{'Цена':>7}  {'Ставка_да':>10}  {'Ставка_нет':>10}  {'Вероятность':>12}"]
+        for row in table:
+            lines.append(f"{row['Цена']:>7}  {row['Ставка_да']:>10.2f}  {row['Ставка_нет']:>10.2f}  {row['Вероятность']:>11.2f}%")
+        table_textbox.configure(state='normal')
+        table_textbox.delete('1.0', 'end')
+        table_textbox.insert('1.0', '\n'.join(lines))
+        table_textbox.configure(state='disabled')
+    update_table()
+
     def place_price_bet():
         try:
             amt = float(entry_price.get().replace(',', '.'))
@@ -297,12 +337,14 @@ def open_bid_window(parent=None, log_bet=None, center_price=None):
             update_bet(table, v, amt, bet_type='да')
             recalculate_all_probabilities(table, center_price)
             update_price_coef()
+            update_table()
+            try:
+                coef = float(coef_label_price.cget("text"))
+            except ValueError:
+                coef = 0.0
             if log_bet:
-                try:
-                    coef = float(coef_label_price.cget("text"))
-                except ValueError:
-                    coef = 0.0
                 log_bet((v, v), amt, coef, "Достижение цели")
+            show_result_popup(amt, coef)
         except Exception:
             pass
 

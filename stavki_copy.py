@@ -294,7 +294,7 @@ def switch_view(view):
         min_val, max_val = MIN1, MAX1
         unit = pixel_range / (max_val - min_val)
         type_label.configure(text="Выбран: Сбербанк")
-        range_question_label.configure(text="В каком диапазоне закроетются акции Сбербанк?")
+        range_question_label.configure(text="Закрытия акции Сбербанк")
         plot_price_chart("SBER", chart_frame)
         # сначала обновить масштаб
         draw_axis_labels()
@@ -310,7 +310,8 @@ def switch_view(view):
         if embedded_bid_frame:
             embedded_bid_frame.destroy()
         embedded_bid_frame = bid.open_bid_window(
-            parent=bet_frame,
+            parent=left_side,
+            table_parent=right_side,
             log_bet=lambda r,a,c,kind: add_to_history(r, a, c, kind),
             center_price=CENTER1,
         )
@@ -322,7 +323,7 @@ def switch_view(view):
         min_val, max_val = MIN2, MAX2
         unit = pixel_range / (max_val - min_val)
         type_label.configure(text="Выбран: Газпром")
-        range_question_label.configure(text="В каком диапазоне закроетются акции Газпром?")
+        range_question_label.configure(text="Закрытия акции Газпром")
         plot_price_chart("GAZP", chart_frame)
         draw_axis_labels()
         x1, x2 = val_to_x(CENTER2 - 2), val_to_x(CENTER2 + 2)
@@ -335,7 +336,8 @@ def switch_view(view):
         if embedded_bid_frame:
             embedded_bid_frame.destroy()
         embedded_bid_frame = bid.open_bid_window(
-            parent=bet_frame,
+            parent=left_side,
+            table_parent=right_side,
             log_bet=lambda r,a,c,kind: add_to_history(r, a, c, kind),
             center_price=CENTER2,
         )
@@ -356,16 +358,22 @@ for txt, val in [("Сбербанк", "type1"), ("Газпром", "type2")]:
     ux.style_button(b); b.pack(pady=20)
 
 bet_frame = ctk.CTkFrame(main_container); ux.style_frame(bet_frame)
-type_label = ctk.CTkLabel(bet_frame, text="", font=(ux.FONT_FAMILY, 16, "bold"), text_color=ux.ACCENT_COLOR)
-type_label.pack(pady=5)
-chart_frame = ctk.CTkFrame(bet_frame); ux.style_frame(chart_frame); chart_frame.pack(pady=5)
 
-range_question_label = ctk.CTkLabel(bet_frame, text="", font=(ux.FONT_FAMILY, 12))
+left_side = ctk.CTkFrame(bet_frame); ux.style_frame(left_side)
+left_side.pack(side="left", fill="both", expand=True)
+right_side = ctk.CTkFrame(bet_frame); ux.style_frame(right_side)
+right_side.pack(side="right", fill="both", expand=True)
+
+type_label = ctk.CTkLabel(left_side, text="", font=(ux.FONT_FAMILY, 16, "bold"), text_color=ux.ACCENT_COLOR)
+type_label.pack(pady=5)
+chart_frame = ctk.CTkFrame(left_side); ux.style_frame(chart_frame); chart_frame.pack(pady=5)
+
+range_question_label = ctk.CTkLabel(left_side, text="", font=(ux.FONT_FAMILY, 12))
 ux.style_label(range_question_label)
 range_question_label.pack(pady=5)
 
 
-scale = ctk.CTkFrame(bet_frame); ux.style_frame(scale); scale.pack(pady=10)
+scale = ctk.CTkFrame(left_side); ux.style_frame(scale); scale.pack(pady=10)
 canvas = tk.Canvas(scale, width=canvas_width, height=60, bg=ux.BG_COLOR, highlightthickness=0)
 canvas.pack(); canvas.create_line(padding, 25, canvas_width - padding, 25, width=2, fill=ux.TEXT_COLOR)
 draw_axis_labels()
@@ -375,7 +383,7 @@ marker_from = canvas.create_rectangle(x1, 15, x1 + marker_width, 35, fill=ux.ACC
 marker_to = canvas.create_rectangle(x2, 15, x2 + marker_width, 35, fill=ux.ACCENT_COLOR, tags="marker")
 canvas.tag_bind("marker", "<B1-Motion>", move_marker)
 
-result = ctk.CTkFrame(bet_frame); ux.style_frame(result); result.pack(pady=10)
+result = ctk.CTkFrame(left_side); ux.style_frame(result); result.pack(pady=10)
 def create_res(label_text):
     frame = ctk.CTkFrame(result); ux.style_frame(frame); frame.pack(side="left", padx=10)
     label = ctk.CTkLabel(frame, text=label_text); ux.style_label(label, 12); label.pack(side="left")
@@ -385,7 +393,7 @@ def create_res(label_text):
 
 range_value = create_res("Диапазон:"); coef_value = create_res("Коэффициент:")
 
-frame_bet = ctk.CTkFrame(bet_frame); ux.style_frame(frame_bet); frame_bet.pack(pady=10)
+frame_bet = ctk.CTkFrame(left_side); ux.style_frame(frame_bet); frame_bet.pack(pady=10)
 label_bet = ctk.CTkLabel(frame_bet, text="Ставка:"); ux.style_label(label_bet); label_bet.pack(side="left")
 entry_bet = ctk.CTkEntry(frame_bet, width=100); ux.style_entry(entry_bet); entry_bet.configure(font=(ux.FONT_FAMILY, 12, "bold"))
 entry_bet.pack(side="left", padx=5); entry_bet.bind("<KeyRelease>", lambda e: format_bet_input())
@@ -394,7 +402,7 @@ ctk.CTkButton(frame_bet, text="Сделать ставку", command=on_bet_clic
 # встроенный интерфейс из bid.py будет инициализирован при выборе компании
 
 mono = ctk.CTkFont(family="Courier New", size=12)
-table_frame = ctk.CTkFrame(bet_frame); ux.style_frame(table_frame); table_frame.pack(pady=10)
+table_frame = ctk.CTkFrame(right_side); ux.style_frame(table_frame); table_frame.pack(pady=10)
 table_textbox = ctk.CTkTextbox(table_frame, width=460, height=150); ux.style_textbox(table_textbox)
 table_textbox.configure(font=mono); table_textbox.pack()
 
