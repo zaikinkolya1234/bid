@@ -137,16 +137,32 @@ def open_bid_window():
     def update_range_coef():
         v1 = x_to_val(canvas_range.coords(left_marker)[0])
         v2 = x_to_val(canvas_range.coords(right_marker)[0])
+
         if v1 > v2:
             coef_label_range.configure(text="-")
             range_value.configure(text="—")
             return
+
+        # Prevent probabilities from reaching 1 which would lead to
+        # division by zero when calculating the coefficient
+        if v1 >= CENTER_PRICE:
+            v1 = CENTER_PRICE - 1
+        if v2 <= CENTER_PRICE:
+            v2 = CENTER_PRICE + 1
+
         p1 = get_prob(table, v1)
         p2 = get_prob(table, v2)
+
         if p1 is None or p2 is None:
             coef_label_range.configure(text="-")
             return
+
         prob_inside = (1 - p1) * (1 - p2)
+        if prob_inside <= 0:
+            coef_label_range.configure(text="-")
+            range_value.configure(text=f"{v1}-{v2}")
+            return
+
         coef = round(max(1, 95 / (prob_inside * 100)), 2)
         coef_label_range.configure(text=str(coef))
         range_value.configure(text=f"{v1}-{v2}")
@@ -155,19 +171,22 @@ def open_bid_window():
         x = min(max(event.x, padding), width + padding - marker_w)
         tag = canvas_range.gettags("current")[0]
         center_x = val_to_x(CENTER_PRICE)
+
         if tag == "left":
             right_x = canvas_range.coords(right_marker)[0]
-            if x + marker_w > right_x:
-                x = right_x - marker_w
-            if x + marker_w > center_x:
-                x = center_x - marker_w
+            max_left = min(right_x - marker_w, val_to_x(CENTER_PRICE - 1))
+
+            if x > max_left:
+                x = max_left
+
             canvas_range.coords(left_marker, x, 15, x + marker_w, 35)
         else:
             left_x = canvas_range.coords(left_marker)[0]
-            if x < left_x + marker_w:
-                x = left_x + marker_w
-            if x < center_x:
-                x = center_x
+            min_right = max(left_x + marker_w, val_to_x(CENTER_PRICE + 1))
+
+            if x < min_right:
+                x = min_right
+
             canvas_range.coords(right_marker, x, 15, x + marker_w, 35)
         update_range_coef()
 
