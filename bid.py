@@ -2,6 +2,7 @@ import math
 import requests
 import customtkinter as ctk
 import tkinter as tk
+import re
 import stavki_ux as ux
 
 def fetch_moex_last_price(ticker: str) -> int:
@@ -131,7 +132,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         win.configure(bg=ux.BG_COLOR)
         for txt, fnt, col, pady in [
             (f"Коэффициент: {coef:.2f}", (ux.FONT_FAMILY, 14), ux.TEXT_COLOR, 10),
-            (f"Возможный выигрыш:\n{format_amount(amount * coef)}", (ux.FONT_FAMILY, 16, 'bold'), ux.ACCENT_COLOR, 10),
+            (f"Возможный выигрыш:\n{format_amount(amount * coef)}", (ux.FONT_FAMILY, 18, 'bold'), ux.ACCENT_COLOR, 10),
         ]:
             tk.Label(win, text=txt, font=fnt, fg=col, bg=ux.BG_COLOR, justify="center").pack(pady=pady)
         tk.Button(win, text="OK", command=win.destroy, font=(ux.FONT_FAMILY, 10), bg="#333", fg=ux.TEXT_COLOR, activebackground=ux.HOVER_COLOR).pack(pady=5)
@@ -153,7 +154,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
             canv.create_text(x, 40, text=str(i), fill=ux.TEXT_COLOR, font=(ux.FONT_FAMILY, 8))
 
     # --- Range selection ---
-    lbl_range = ctk.CTkLabel(container, text="Выбор диапазона")
+    lbl_range = ctk.CTkLabel(container, text="Выбор диапазона", anchor="center")
     ux.style_label(lbl_range, 12)
     add_row(lbl_range)
 
@@ -182,6 +183,13 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     ux.style_entry(entry_range)
     entry_range.configure(font=(ux.FONT_FAMILY, 12, "bold"))
     entry_range.pack(side="left", padx=5)
+    entry_range.bind("<KeyRelease>", lambda e: format_entry(entry_range))
+
+    def format_entry(entry):
+        digits = re.sub(r"\D", "", entry.get())
+        if digits:
+            entry.delete(0, "end")
+            entry.insert(0, f"{int(digits):,}".replace(",", "."))
 
     def update_range_coef():
         v1 = x_to_val(canvas_range.coords(left_marker)[0])
@@ -243,7 +251,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     def place_range_bet():
         try:
-            amt = float(entry_range.get().replace(',', '.'))
+            amt = float(entry_range.get().replace('.', '').replace(',', '.'))
             v1 = x_to_val(canvas_range.coords(left_marker)[0])
             v2 = x_to_val(canvas_range.coords(right_marker)[0])
             process_express(table, v1, v2, amt)
@@ -265,7 +273,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     btn_range.pack(side="right", padx=5)
 
     # --- Price selection ---
-    lbl_price = ctk.CTkLabel(container, text="Достижение цены")
+    lbl_price = ctk.CTkLabel(container, text="Достижение цены", anchor="center")
     ux.style_label(lbl_price, 12)
     add_row(lbl_price)
 
@@ -291,6 +299,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     ux.style_entry(entry_price)
     entry_price.configure(font=(ux.FONT_FAMILY, 12, "bold"))
     entry_price.pack(side="left", padx=5)
+    entry_price.bind("<KeyRelease>", lambda e: format_entry(entry_price))
 
     def update_price_coef():
         v = x_to_val(canvas_price.coords(marker)[0])
@@ -315,7 +324,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     ux.style_frame(table_frame)
     table_frame.pack(pady=10)
     mono = ctk.CTkFont(family="Courier New", size=12)
-    table_textbox = ctk.CTkTextbox(table_frame, width=460, height=150)
+    table_textbox = ctk.CTkTextbox(table_frame, width=460, height=340)
     ux.style_textbox(table_textbox)
     table_textbox.configure(font=mono)
     table_textbox.pack()
@@ -332,7 +341,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     def place_price_bet():
         try:
-            amt = float(entry_price.get().replace(',', '.'))
+            amt = float(entry_price.get().replace('.', '').replace(',', '.'))
             v = x_to_val(canvas_price.coords(marker)[0])
             update_bet(table, v, amt, bet_type='да')
             recalculate_all_probabilities(table, center_price)
