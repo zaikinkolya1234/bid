@@ -1,5 +1,4 @@
 import customtkinter as ctk
-ctk.deactivate_automatic_dpi_awareness()
 import tkinter as tk
 import re
 
@@ -35,12 +34,15 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     ctk.set_appearance_mode("dark")
     if parent is None:
         root = ctk.CTk()
+        scaling = root.winfo_fpixels("1i") / 96
+        ctk.set_widget_scaling(scaling)
+        ctk.set_window_scaling(scaling)
+        root.tk.call("tk", "scaling", scaling)
         sw = root.winfo_screenwidth()
         sh = root.winfo_screenheight()
         width = int(sw * 0.5)
         height = int(sh * 0.5)
         root.geometry(f"{width}x{height}+{(sw - width)//2}+{(sh - height)//2}")
-        root.tk.call('tk', 'scaling', 1.5)
         root.title("Ставки")
         container = root
     else:

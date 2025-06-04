@@ -1,5 +1,4 @@
 import customtkinter as ctk
-ctk.deactivate_automatic_dpi_awareness()
 import tkinter as tk
 from tkinter import messagebox
 import re
@@ -320,12 +319,16 @@ def run_app():
     ctk.set_appearance_mode("dark")
     ctk.set_default_color_theme("blue")
     root = ctk.CTk()
+    scaling = root.winfo_fpixels("1i") / 96
+    ctk.set_widget_scaling(scaling)
+    ctk.set_window_scaling(scaling)
+    root.tk.call("tk", "scaling", scaling)
+
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     width = int(screen_width * 0.8)
     height = int(screen_height * 0.8)
     root.geometry(f"{width}x{height}+{(screen_width - width)//2}+{(screen_height - height)//2}")
-    root.tk.call('tk', 'scaling', 1.5)
     update_dimensions(width)
     root.title("Ставки на закрытие акций")
     root.configure(fg_color=ux.BG_COLOR)
@@ -428,7 +431,7 @@ def run_app():
     ux.style_label(label_bet)
     label_bet.pack(side="left")
     entry_bet = ctk.CTkEntry(frame_bet, width=100)
-    ux.style_entry(entry_bet, size=10)
+    ux.style_entry(entry_bet)
     entry_bet.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold"))
     entry_bet.pack(side="left", padx=5)
     entry_bet.bind("<KeyRelease>", lambda e: format_bet_input())
