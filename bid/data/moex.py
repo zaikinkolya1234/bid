@@ -50,7 +50,7 @@ def plot_price_chart(ticker: str, parent_frame):
     if not times or not prices:
         return
 
-    fig, ax = plt.subplots(figsize=(4.8, 3), dpi=100)
+    fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
     fig.patch.set_facecolor("#1A1A1A")
     ax.set_facecolor("#1A1A1A")
     ax.plot(times, prices, linewidth=1.8, color=ux.ACCENT_COLOR)

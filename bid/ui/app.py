@@ -377,7 +377,7 @@ def run_app():
         text_color=ux.ACCENT_COLOR,
     )
     type_label.pack(pady=5)
-    chart_frame = ctk.CTkFrame(right_side)
+    chart_frame = ctk.CTkFrame(left_side)
     ux.style_frame(chart_frame)
     chart_frame.pack(pady=5, fill="both", expand=True)
 
@@ -414,7 +414,7 @@ def run_app():
         label = ctk.CTkLabel(frame, text=label_text)
         ux.style_label(label, 12)
         label.pack(side="left")
-        box = ctk.CTkFrame(frame)
+        box = ctk.CTkFrame(frame, width=80)
         ux.style_box_frame(box)
         box.pack(side="left", padx=5)
         value = ctk.CTkLabel(box, text="—" if "Диапазон" in label_text else "-")
