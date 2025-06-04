@@ -272,6 +272,7 @@ def switch_view(view):
             log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
             center_price=CENTER1,
             table=price_table1,
+            axis_width=pixel_range,
         )
         embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
@@ -299,6 +300,7 @@ def switch_view(view):
             log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
             center_price=CENTER2,
             table=price_table2,
+            axis_width=pixel_range,
         )
         embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
@@ -375,7 +377,7 @@ def run_app():
         text_color=ux.ACCENT_COLOR,
     )
     type_label.pack(pady=5)
-    chart_frame = ctk.CTkFrame(left_side)
+    chart_frame = ctk.CTkFrame(right_side)
     ux.style_frame(chart_frame)
     chart_frame.pack(pady=5, fill="both", expand=True)
 
@@ -435,14 +437,9 @@ def run_app():
     entry_bet.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold"))
     entry_bet.pack(side="left", padx=5)
     entry_bet.bind("<KeyRelease>", lambda e: format_bet_input())
-    ctk.CTkButton(
-        frame_bet,
-        text="Сделать ставку",
-        command=on_bet_click,
-        fg_color=ux.ACCENT_COLOR,
-        hover_color=ux.HOVER_COLOR,
-        text_color=ux.BG_COLOR,
-    ).pack(side="left", padx=5)
+    btn_main_bet = ctk.CTkButton(frame_bet, text="Сделать ставку", command=on_bet_click)
+    ux.style_button(btn_main_bet)
+    btn_main_bet.pack(side="left", padx=5)
 
     mono = ctk.CTkFont(family="Courier New", size=12)
     table_frame = ctk.CTkFrame(right_side)

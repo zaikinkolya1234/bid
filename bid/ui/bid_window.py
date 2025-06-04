@@ -19,7 +19,7 @@ except Exception as e:
     DEFAULT_CENTER_PRICE = 110
 
 
-def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=None, table=None):
+def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=None, table=None, axis_width=None):
     """Open graphical interface for placing bets on price range or target."""
 
     if center_price is None:
@@ -109,7 +109,10 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     max_val = price_range.stop - 1
     padding = 10
     screen_w = (root.winfo_screenwidth() if root is not None else parent.winfo_screenwidth())
-    width = int(screen_w * 0.4)
+    if axis_width is not None:
+        width = int(axis_width)
+    else:
+        width = int(screen_w * 0.4)
     marker_w = 6
     unit = width / (max_val - min_val)
     val_to_x = lambda v: int((v - min_val) * unit) + padding
@@ -154,6 +157,9 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     frame_range_bet = ctk.CTkFrame(container)
     ux.style_frame(frame_range_bet)
     add_row(frame_range_bet)
+    lbl_range_bet = ctk.CTkLabel(frame_range_bet, text="Ставка:")
+    ux.style_label(lbl_range_bet)
+    lbl_range_bet.pack(side="left")
     entry_range = ctk.CTkEntry(frame_range_bet, width=100)
     ux.style_entry(entry_range)
     entry_range.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold"))
@@ -243,7 +249,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     btn_range = ctk.CTkButton(frame_range_bet, text="Сделать ставку", command=place_range_bet)
     ux.style_button(btn_range)
-    btn_range.pack(side="right", padx=5)
+    btn_range.pack(side="left", padx=5)
 
     # --- Price selection ---
     lbl_price = ctk.CTkLabel(container, text="Достижение цены", anchor="center")
@@ -268,6 +274,9 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     frame_price_bet = ctk.CTkFrame(container)
     ux.style_frame(frame_price_bet)
     add_row(frame_price_bet)
+    lbl_price_bet = ctk.CTkLabel(frame_price_bet, text="Ставка:")
+    ux.style_label(lbl_price_bet)
+    lbl_price_bet.pack(side="left")
     entry_price = ctk.CTkEntry(frame_price_bet, width=100)
     ux.style_entry(entry_price)
     entry_price.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold"))
@@ -332,7 +341,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     btn_price = ctk.CTkButton(frame_price_bet, text="Сделать ставку", command=place_price_bet)
     ux.style_button(btn_price)
-    btn_price.pack(side="right", padx=5)
+    btn_price.pack(side="left", padx=5)
 
     if root is not None:
         root.mainloop()
