@@ -16,8 +16,6 @@ def style_button(button: ctk.CTkButton):
         hover_color=HOVER_COLOR,
         text_color=BG_COLOR,
         font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
-        pady=6,
-        padx=12,
     )
 
 def style_frame(frame: ctk.CTkFrame):
