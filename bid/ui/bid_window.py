@@ -62,7 +62,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     def create_res(parent, label_text):
         frame = ctk.CTkFrame(parent)
         ux.style_frame(frame)
-        frame.pack(side="left", padx=10, fill="both", expand=True)
+        frame.pack(side="left", padx=10)
         lbl = ctk.CTkLabel(frame, text=label_text)
         ux.style_label(lbl, 12)
         lbl.pack(side="left")
@@ -158,13 +158,13 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     frame_range_info = ctk.CTkFrame(container)
     ux.style_frame(frame_range_info)
-    add_row(frame_range_info)
+    add_row(frame_range_info, center=True)
     range_value = create_res(frame_range_info, "Диапазон:")
     coef_label_range = create_res(frame_range_info, "Коэффициент:")
 
     frame_range_bet = ctk.CTkFrame(container)
     ux.style_frame(frame_range_bet)
-    add_row(frame_range_bet)
+    add_row(frame_range_bet, center=True)
     lbl_range_bet = ctk.CTkLabel(frame_range_bet, text="Ставка:")
     ux.style_label(lbl_range_bet)
     lbl_range_bet.pack(side="left")
@@ -280,13 +280,13 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     frame_price_info = ctk.CTkFrame(container)
     ux.style_frame(frame_price_info)
-    add_row(frame_price_info)
+    add_row(frame_price_info, center=True)
     price_value = create_res(frame_price_info, "Цена:")
     coef_label_price = create_res(frame_price_info, "Коэффициент:")
 
     frame_price_bet = ctk.CTkFrame(container)
     ux.style_frame(frame_price_bet)
-    add_row(frame_price_bet)
+    add_row(frame_price_bet, center=True)
     lbl_price_bet = ctk.CTkLabel(frame_price_bet, text="Ставка:")
     ux.style_label(lbl_price_bet)
     lbl_price_bet.pack(side="left")

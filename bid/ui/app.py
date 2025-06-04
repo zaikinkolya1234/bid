@@ -405,12 +405,12 @@ def run_app():
 
     result = ctk.CTkFrame(left_side)
     ux.style_frame(result)
-    result.pack(pady=10, fill="both", expand=True)
+    result.pack(pady=10)
 
     def create_res(label_text):
         frame = ctk.CTkFrame(result)
         ux.style_frame(frame)
-        frame.pack(side="left", padx=10, fill="both", expand=True)
+        frame.pack(side="left", padx=10)
         label = ctk.CTkLabel(frame, text=label_text)
         ux.style_label(label, 12)
         label.pack(side="left")
@@ -428,7 +428,7 @@ def run_app():
 
     frame_bet = ctk.CTkFrame(left_side)
     ux.style_frame(frame_bet)
-    frame_bet.pack(pady=10, fill="both", expand=True)
+    frame_bet.pack(pady=10)
     label_bet = ctk.CTkLabel(frame_bet, text="Ставка:")
     ux.style_label(label_bet)
     label_bet.pack(side="left")
