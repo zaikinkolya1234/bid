@@ -53,8 +53,11 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         table_parent = container
 
     # --- layout helpers ---
-    def add_row(widget, **pack_opts):
-        widget.pack(pady=5, padx=10, fill="both", expand=True, **pack_opts)
+    def add_row(widget, center=False, **pack_opts):
+        if center:
+            widget.pack(pady=5, padx=10)
+        else:
+            widget.pack(pady=5, padx=10, fill="both", expand=True, **pack_opts)
 
     def create_res(parent, label_text):
         frame = ctk.CTkFrame(parent)
@@ -63,9 +66,9 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         lbl = ctk.CTkLabel(frame, text=label_text)
         ux.style_label(lbl, 12)
         lbl.pack(side="left")
-        box = ctk.CTkFrame(frame)
+        box = ctk.CTkFrame(frame, width=80)
         ux.style_box_frame(box)
-        box.pack(side="left", padx=5, fill="both", expand=True)
+        box.pack(side="left", padx=5)
         val = ctk.CTkLabel(box, text="—" if "Диапазон" in label_text else "-")
         ux.style_label(val, 12)
         val.pack(padx=6, pady=2)
@@ -136,9 +139,14 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     ux.style_label(lbl_range, 12)
     add_row(lbl_range)
 
-    canvas_range = tk.Canvas(container, width=width + 2 * padding, height=60,
-                             bg=ux.BG_COLOR, highlightthickness=0)
-    add_row(canvas_range)
+    canvas_range = tk.Canvas(
+        container,
+        width=width + 2 * padding,
+        height=60,
+        bg=ux.BG_COLOR,
+        highlightthickness=0,
+    )
+    add_row(canvas_range, center=True)
     draw_axis(canvas_range)
 
     left_marker = canvas_range.create_rectangle(val_to_x(center_price - 2), 15,
@@ -256,9 +264,14 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     ux.style_label(lbl_price, 12)
     add_row(lbl_price)
 
-    canvas_price = tk.Canvas(container, width=width + 2 * padding, height=60,
-                             bg=ux.BG_COLOR, highlightthickness=0)
-    add_row(canvas_price)
+    canvas_price = tk.Canvas(
+        container,
+        width=width + 2 * padding,
+        height=60,
+        bg=ux.BG_COLOR,
+        highlightthickness=0,
+    )
+    add_row(canvas_price, center=True)
     draw_axis(canvas_price)
 
     marker = canvas_price.create_rectangle(val_to_x(center_price), 15,

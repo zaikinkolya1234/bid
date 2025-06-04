@@ -22,26 +22,28 @@ def style_button(button: ctk.CTkButton):
         fg_color=ACCENT_COLOR,
         hover_color=HOVER_COLOR,
         text_color="black",
-        font=ctk.CTkFont(family=FONT_FAMILY, size=BASE_FONT_SIZE)
+        font=ctk.CTkFont(family=FONT_FAMILY, size=BASE_FONT_SIZE, weight="bold"),
     )
 
 def style_frame(frame: ctk.CTkFrame):
     """Standard frame styling with rounded corners and slight padding."""
     frame.configure(fg_color=BG_COLOR, corner_radius=12)
 
-def style_label(label: ctk.CTkLabel, size=BASE_FONT_SIZE, weight="normal"):
+def style_label(label: ctk.CTkLabel, size=BASE_FONT_SIZE, weight="bold"):
+    """Style for labels used across the interface."""
     label.configure(
         font=ctk.CTkFont(family=FONT_FAMILY, size=size, weight=weight),
-        text_color=TEXT_COLOR
+        text_color=TEXT_COLOR,
     )
 
-def style_entry(entry: ctk.CTkEntry, size=BASE_FONT_SIZE, weight="normal"):
+def style_entry(entry: ctk.CTkEntry, size=BASE_FONT_SIZE, weight="bold"):
+    """Unified entry field styling."""
     entry.configure(
         height=32,
         corner_radius=12,
         font=ctk.CTkFont(family=FONT_FAMILY, size=size, weight=weight),
-        fg_color="#1A1A1A",
-        text_color=TEXT_COLOR
+        fg_color="#262626",
+        text_color=TEXT_COLOR,
     )
 
 def style_textbox(textbox: ctk.CTkTextbox, size=BASE_FONT_SIZE):
