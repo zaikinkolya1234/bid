@@ -35,8 +35,13 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     ctk.set_appearance_mode("dark")
     if parent is None:
         root = ctk.CTk()
+        sw = root.winfo_screenwidth()
+        sh = root.winfo_screenheight()
+        width = int(sw * 0.5)
+        height = int(sh * 0.5)
+        root.geometry(f"{width}x{height}+{(sw - width)//2}+{(sh - height)//2}")
+        root.tk.call('tk', 'scaling', 1.5)
         root.title("Ставки")
-        root.geometry("500x500")
         container = root
     else:
         container = ctk.CTkFrame(parent, fg_color=ux.BG_COLOR)
@@ -47,18 +52,18 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     # --- layout helpers ---
     def add_row(widget, **pack_opts):
-        widget.pack(pady=5, padx=10, **pack_opts)
+        widget.pack(pady=5, padx=10, fill="both", expand=True, **pack_opts)
 
     def create_res(parent, label_text):
         frame = ctk.CTkFrame(parent)
         ux.style_frame(frame)
-        frame.pack(side="left", padx=10)
+        frame.pack(side="left", padx=10, fill="both", expand=True)
         lbl = ctk.CTkLabel(frame, text=label_text)
         ux.style_label(lbl, 12)
         lbl.pack(side="left")
         box = ctk.CTkFrame(frame)
         ux.style_box_frame(box)
-        box.pack(side="left", padx=5)
+        box.pack(side="left", padx=5, fill="both", expand=True)
         val = ctk.CTkLabel(box, text="—" if "Диапазон" in label_text else "-")
         ux.style_label(val, 12)
         val.pack(padx=6, pady=2)
@@ -67,7 +72,11 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     def show_result_popup(amount, coef):
         win = tk.Toplevel(container)
         win.title("Результат ставки")
-        win.geometry("300x200")
+        sw = win.winfo_screenwidth()
+        sh = win.winfo_screenheight()
+        w = int(sw * 0.3)
+        h = int(sh * 0.3)
+        win.geometry(f"{w}x{h}+{(sw - w)//2}+{(sh - h)//2}")
         win.configure(bg=ux.BG_COLOR)
         for txt, fnt, col, pady in [
             (
@@ -97,7 +106,8 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     min_val = price_range.start
     max_val = price_range.stop - 1
     padding = 10
-    width = 400
+    screen_w = (root.winfo_screenwidth() if root is not None else parent.winfo_screenwidth())
+    width = int(screen_w * 0.4)
     marker_w = 6
     unit = width / (max_val - min_val)
     val_to_x = lambda v: int((v - min_val) * unit) + padding
@@ -283,7 +293,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     table_frame = ctk.CTkFrame(table_parent)
     ux.style_frame(table_frame)
-    table_frame.pack(pady=10)
+    table_frame.pack(pady=10, fill="both", expand=True)
     mono = ctk.CTkFont(family="Courier New", size=12)
     table_textbox = ctk.CTkTextbox(table_frame, width=460, height=340)
     ux.style_textbox(table_textbox)

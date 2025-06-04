@@ -79,6 +79,15 @@ unit = pixel_range / (max_val - min_val)
 val_to_x = lambda v: int((v - min_val) * unit) + padding
 x_to_val = lambda x: int(round((x - padding) / unit + min_val))
 
+def update_dimensions(window_width: int):
+    """Recalculate global geometry values based on window width."""
+    global pixel_range, canvas_width, unit, val_to_x, x_to_val
+    pixel_range = int(window_width * 0.4)
+    canvas_width = pixel_range + 2 * padding
+    unit = pixel_range / (max_val - min_val)
+    val_to_x = lambda v: int((v - min_val) * unit) + padding
+    x_to_val = lambda x: int(round((x - padding) / unit + min_val))
+
 format_amount = lambda a: "{:,.2f}".format(a).replace(",", " ").replace(".", ",")
 
 
@@ -175,7 +184,11 @@ def on_bet_click():
 def show_result(amt, coef):
     win = tk.Toplevel(root)
     win.title("Результат ставки")
-    win.geometry("300x200")
+    sw = win.winfo_screenwidth()
+    sh = win.winfo_screenheight()
+    w = int(sw * 0.3)
+    h = int(sh * 0.3)
+    win.geometry(f"{w}x{h}+{(sw - w)//2}+{(sh - h)//2}")
     win.configure(bg="#1A1A1A")
     for txt, fnt, col, pady in [
         (f"Коэффициент: {coef:.2f}", ctk.CTkFont(family=ux.FONT_FAMILY, size=14), ux.TEXT_COLOR, 10),
@@ -309,7 +322,11 @@ def run_app():
     root = ctk.CTk()
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
-    root.geometry(f"{screen_width}x{screen_height}")
+    width = int(screen_width * 0.8)
+    height = int(screen_height * 0.8)
+    root.geometry(f"{width}x{height}+{(screen_width - width)//2}+{(screen_height - height)//2}")
+    root.tk.call('tk', 'scaling', 1.5)
+    update_dimensions(width)
     root.title("Ставки на закрытие акций")
     root.configure(fg_color=ux.BG_COLOR)
 
@@ -318,7 +335,7 @@ def run_app():
 
     menu = ctk.CTkFrame(main_container)
     ux.style_frame(menu)
-    menu.pack(fill="x", pady=5)
+    menu.pack(fill="both", expand=True, pady=5)
     for txt, cmd in [
         ("Ставки", lambda: switch_view("bet")),
         ("История", lambda: switch_view("history")),
@@ -357,7 +374,7 @@ def run_app():
     type_label.pack(pady=5)
     chart_frame = ctk.CTkFrame(left_side)
     ux.style_frame(chart_frame)
-    chart_frame.pack(pady=5)
+    chart_frame.pack(pady=5, fill="both", expand=True)
 
     range_question_label = ctk.CTkLabel(
         left_side,
@@ -370,7 +387,7 @@ def run_app():
     global scale
     scale = ctk.CTkFrame(left_side)
     ux.style_frame(scale)
-    scale.pack(pady=10)
+    scale.pack(pady=10, fill="both", expand=True)
     canvas = tk.Canvas(scale, width=canvas_width, height=60, bg=ux.BG_COLOR, highlightthickness=0)
     canvas.pack()
     canvas.create_line(padding, 25, canvas_width - padding, 25, width=2, fill=ux.TEXT_COLOR)
@@ -383,12 +400,12 @@ def run_app():
 
     result = ctk.CTkFrame(left_side)
     ux.style_frame(result)
-    result.pack(pady=10)
+    result.pack(pady=10, fill="both", expand=True)
 
     def create_res(label_text):
         frame = ctk.CTkFrame(result)
         ux.style_frame(frame)
-        frame.pack(side="left", padx=10)
+        frame.pack(side="left", padx=10, fill="both", expand=True)
         label = ctk.CTkLabel(frame, text=label_text)
         ux.style_label(label, 12)
         label.pack(side="left")
@@ -406,7 +423,7 @@ def run_app():
 
     frame_bet = ctk.CTkFrame(left_side)
     ux.style_frame(frame_bet)
-    frame_bet.pack(pady=10)
+    frame_bet.pack(pady=10, fill="both", expand=True)
     label_bet = ctk.CTkLabel(frame_bet, text="Ставка:")
     ux.style_label(label_bet)
     label_bet.pack(side="left")
@@ -427,7 +444,7 @@ def run_app():
     mono = ctk.CTkFont(family="Courier New", size=12)
     table_frame = ctk.CTkFrame(right_side)
     ux.style_frame(table_frame)
-    table_frame.pack(pady=10)
+    table_frame.pack(pady=10, fill="both", expand=True)
     table_textbox = ctk.CTkTextbox(table_frame, width=460, height=340)
     ux.style_textbox(table_textbox)
     table_textbox.configure(font=mono)
