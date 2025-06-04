@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import stavki_ux as ux
 
+print("мир")
+
 def fetch_moex_last_price(ticker: str) -> int:
     """Return last traded price for the given ticker from MOEX."""
     url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{ticker}.json"
