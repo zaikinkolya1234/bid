@@ -191,11 +191,29 @@ def show_result(amt, coef):
     win.geometry(f"{w}x{h}+{(sw - w)//2}+{(sh - h)//2}")
     win.configure(bg="#1A1A1A")
     for txt, fnt, col, pady in [
-        (f"Коэффициент: {coef:.2f}", ctk.CTkFont(family=ux.FONT_FAMILY, size=14), ux.TEXT_COLOR, 10),
-        (f"Возможный выигрыш:\n{format_amount(amt * coef)}", ctk.CTkFont(family=ux.FONT_FAMILY, size=16, weight="bold"), ux.ACCENT_COLOR, 10),
+        (
+            f"Коэффициент: {coef:.2f}",
+            ctk.CTkFont(family=ux.FONT_FAMILY, size=16),
+            ux.TEXT_COLOR,
+            10,
+        ),
+        (
+            f"Возможный выигрыш:\n{format_amount(amt * coef)}",
+            ctk.CTkFont(family=ux.FONT_FAMILY, size=18, weight="bold"),
+            ux.ACCENT_COLOR,
+            10,
+        ),
     ]:
         tk.Label(win, text=txt, font=fnt, fg=col, bg="#1A1A1A", justify="center").pack(pady=pady)
-    tk.Button(win, text="OK", command=win.destroy, font=ctk.CTkFont(family=ux.FONT_FAMILY, size=10), bg="#333", fg=ux.TEXT_COLOR, activebackground=ux.HOVER_COLOR).pack(pady=5)
+    tk.Button(
+        win,
+        text="OK",
+        command=win.destroy,
+        font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12),
+        bg="#333",
+        fg=ux.TEXT_COLOR,
+        activebackground=ux.HOVER_COLOR,
+    ).pack(pady=5)
 
 
 def update_history_view():
@@ -325,7 +343,8 @@ def run_app():
     width = int(screen_width * 0.8)
     height = int(screen_height * 0.8)
     root.geometry(f"{width}x{height}+{(screen_width - width)//2}+{(screen_height - height)//2}")
-    root.tk.call('tk', 'scaling', 1.5)
+    scaling = max(1.0, min(2.0, screen_width / 1600))
+    root.tk.call("tk", "scaling", scaling)
     update_dimensions(width)
     root.title("Ставки на закрытие акций")
     root.configure(fg_color=ux.BG_COLOR)
@@ -427,9 +446,9 @@ def run_app():
     label_bet = ctk.CTkLabel(frame_bet, text="Ставка:")
     ux.style_label(label_bet)
     label_bet.pack(side="left")
-    entry_bet = ctk.CTkEntry(frame_bet, width=100)
-    ux.style_entry(entry_bet, size=10)
-    entry_bet.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold"))
+    entry_bet = ctk.CTkEntry(frame_bet)
+    ux.style_entry(entry_bet)
+    entry_bet.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=14, weight="bold"))
     entry_bet.pack(side="left", padx=5)
     entry_bet.bind("<KeyRelease>", lambda e: format_bet_input())
     ctk.CTkButton(
@@ -445,14 +464,14 @@ def run_app():
     table_frame = ctk.CTkFrame(right_side)
     ux.style_frame(table_frame)
     table_frame.pack(pady=10, fill="both", expand=True)
-    table_textbox = ctk.CTkTextbox(table_frame, width=460, height=340)
+    table_textbox = ctk.CTkTextbox(table_frame)
     ux.style_textbox(table_textbox)
     table_textbox.configure(font=mono)
     table_textbox.pack()
 
     history_frame = ctk.CTkFrame(main_container)
     ux.style_frame(history_frame)
-    history_textbox = ctk.CTkTextbox(history_frame, width=460, height=400)
+    history_textbox = ctk.CTkTextbox(history_frame)
     ux.style_textbox(history_textbox)
     history_textbox.pack(padx=10, pady=10)
 
@@ -463,7 +482,7 @@ def run_app():
 
     info_frame = ctk.CTkFrame(main_container)
     ux.style_frame(info_frame)
-    info_textbox = ctk.CTkTextbox(info_frame, width=460, height=400)
+    info_textbox = ctk.CTkTextbox(info_frame)
     ux.style_textbox(info_textbox)
     info_textbox.pack(padx=10, pady=10)
 
