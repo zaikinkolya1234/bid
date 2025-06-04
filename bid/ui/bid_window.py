@@ -70,11 +70,29 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         win.geometry("300x200")
         win.configure(bg=ux.BG_COLOR)
         for txt, fnt, col, pady in [
-            (f"Коэффициент: {coef:.2f}", (ux.FONT_FAMILY, 14), ux.TEXT_COLOR, 10),
-            (f"Возможный выигрыш:\n{format_amount(amount * coef)}", (ux.FONT_FAMILY, 18, 'bold'), ux.ACCENT_COLOR, 10),
+            (
+                f"Коэффициент: {coef:.2f}",
+                ctk.CTkFont(family=ux.FONT_FAMILY, size=14),
+                ux.TEXT_COLOR,
+                10,
+            ),
+            (
+                f"Возможный выигрыш:\n{format_amount(amount * coef)}",
+                ctk.CTkFont(family=ux.FONT_FAMILY, size=18, weight="bold"),
+                ux.ACCENT_COLOR,
+                10,
+            ),
         ]:
             tk.Label(win, text=txt, font=fnt, fg=col, bg=ux.BG_COLOR, justify="center").pack(pady=pady)
-        tk.Button(win, text="OK", command=win.destroy, font=(ux.FONT_FAMILY, 10), bg="#333", fg=ux.TEXT_COLOR, activebackground=ux.HOVER_COLOR).pack(pady=5)
+        tk.Button(
+            win,
+            text="OK",
+            command=win.destroy,
+            font=ctk.CTkFont(family=ux.FONT_FAMILY, size=10),
+            bg="#333",
+            fg=ux.TEXT_COLOR,
+            activebackground=ux.HOVER_COLOR,
+        ).pack(pady=5)
 
     min_val = price_range.start
     max_val = price_range.stop - 1
@@ -90,7 +108,13 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         for i in range(min_val, max_val + 1, 2):
             x = val_to_x(i)
             canv.create_line(x, 20, x, 30, fill=ux.TEXT_COLOR)
-            canv.create_text(x, 40, text=str(i), fill=ux.TEXT_COLOR, font=(ux.FONT_FAMILY, 8))
+            canv.create_text(
+                x,
+                40,
+                text=str(i),
+                fill=ux.TEXT_COLOR,
+                font=ctk.CTkFont(family=ux.FONT_FAMILY, size=8),
+            )
 
     # --- Range selection ---
     lbl_range = ctk.CTkLabel(container, text="Выбор диапазона", anchor="center")
@@ -120,7 +144,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     add_row(frame_range_bet)
     entry_range = ctk.CTkEntry(frame_range_bet, width=100)
     ux.style_entry(entry_range)
-    entry_range.configure(font=(ux.FONT_FAMILY, 12, "bold"))
+    entry_range.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold"))
     entry_range.pack(side="left", padx=5)
     entry_range.bind("<KeyRelease>", lambda e: format_entry(entry_range))
 
@@ -234,7 +258,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     add_row(frame_price_bet)
     entry_price = ctk.CTkEntry(frame_price_bet, width=100)
     ux.style_entry(entry_price)
-    entry_price.configure(font=(ux.FONT_FAMILY, 12, "bold"))
+    entry_price.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold"))
     entry_price.pack(side="left", padx=5)
     entry_price.bind("<KeyRelease>", lambda e: format_entry(entry_price))
 

@@ -178,11 +178,11 @@ def show_result(amt, coef):
     win.geometry("300x200")
     win.configure(bg="#1A1A1A")
     for txt, fnt, col, pady in [
-        (f"Коэффициент: {coef:.2f}", (ux.FONT_FAMILY, 14), ux.TEXT_COLOR, 10),
-        (f"Возможный выигрыш:\n{format_amount(amt * coef)}", (ux.FONT_FAMILY, 16, "bold"), ux.ACCENT_COLOR, 10),
+        (f"Коэффициент: {coef:.2f}", ctk.CTkFont(family=ux.FONT_FAMILY, size=14), ux.TEXT_COLOR, 10),
+        (f"Возможный выигрыш:\n{format_amount(amt * coef)}", ctk.CTkFont(family=ux.FONT_FAMILY, size=16, weight="bold"), ux.ACCENT_COLOR, 10),
     ]:
         tk.Label(win, text=txt, font=fnt, fg=col, bg="#1A1A1A", justify="center").pack(pady=pady)
-    tk.Button(win, text="OK", command=win.destroy, font=(ux.FONT_FAMILY, 10), bg="#333", fg=ux.TEXT_COLOR, activebackground=ux.HOVER_COLOR).pack(pady=5)
+    tk.Button(win, text="OK", command=win.destroy, font=ctk.CTkFont(family=ux.FONT_FAMILY, size=10), bg="#333", fg=ux.TEXT_COLOR, activebackground=ux.HOVER_COLOR).pack(pady=5)
 
 
 def update_history_view():
@@ -220,7 +220,14 @@ def draw_axis_labels():
     for i in range(min_val, max_val + 1, 2):
         x = val_to_x(i)
         canvas.create_line(x, 20, x, 30, fill=ux.TEXT_COLOR, tags="tick")
-        canvas.create_text(x, 40, text=str(i), font=(ux.FONT_FAMILY, 8), fill=ux.TEXT_COLOR, tags="tick")
+        canvas.create_text(
+            x,
+            40,
+            text=str(i),
+            font=ctk.CTkFont(family=ux.FONT_FAMILY, size=8),
+            fill=ux.TEXT_COLOR,
+            tags="tick",
+        )
 
 
 def switch_view(view):
@@ -341,13 +348,22 @@ def run_app():
     ux.style_frame(right_side)
     right_side.pack(side="right", fill="both", expand=True)
 
-    type_label = ctk.CTkLabel(left_side, text="", font=(ux.FONT_FAMILY, 16, "bold"), text_color=ux.ACCENT_COLOR)
+    type_label = ctk.CTkLabel(
+        left_side,
+        text="",
+        font=ctk.CTkFont(family=ux.FONT_FAMILY, size=16, weight="bold"),
+        text_color=ux.ACCENT_COLOR,
+    )
     type_label.pack(pady=5)
     chart_frame = ctk.CTkFrame(left_side)
     ux.style_frame(chart_frame)
     chart_frame.pack(pady=5)
 
-    range_question_label = ctk.CTkLabel(left_side, text="", font=(ux.FONT_FAMILY, 12))
+    range_question_label = ctk.CTkLabel(
+        left_side,
+        text="",
+        font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12),
+    )
     ux.style_label(range_question_label, 12)
     range_question_label.pack(pady=5)
 
@@ -395,8 +411,8 @@ def run_app():
     ux.style_label(label_bet)
     label_bet.pack(side="left")
     entry_bet = ctk.CTkEntry(frame_bet, width=100)
-    ux.style_entry(entry_bet)
-    entry_bet.configure(font=(ux.FONT_FAMILY, 12, "bold"))
+    ux.style_entry(entry_bet, size=10)
+    entry_bet.configure(font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12, weight="bold"))
     entry_bet.pack(side="left", padx=5)
     entry_bet.bind("<KeyRelease>", lambda e: format_bet_input())
     ctk.CTkButton(
