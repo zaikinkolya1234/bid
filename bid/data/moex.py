@@ -1,0 +1,80 @@
+import datetime
+import requests
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from ..ui import styles as ux
+
+
+def fetch_moex_last_price(ticker: str) -> int:
+    """Return last traded price for the given ticker from MOEX."""
+    url = (
+        f"https://iss.moex.com/iss/engines/stock/markets/shares/"
+        f"securities/{ticker}.json"
+    )
+    r = requests.get(url, timeout=10)
+    data = r.json()
+    market_data = data["marketdata"]["data"][0]
+    idx = data["marketdata"]["columns"].index("LAST")
+    return round(float(market_data[idx]))
+
+
+def fetch_intraday_prices(ticker: str):
+    """Return time and price arrays for the previous trading day."""
+    try:
+        yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+        date = yesterday.strftime("%Y-%m-%d")
+        url = (
+            f"https://iss.moex.com/iss/engines/stock/markets/shares/"
+            f"securities/{ticker}/candles.json?from={date}&interval=1"
+        )
+        r = requests.get(url, timeout=10)
+        data = r.json()
+        candles = data.get("candles", {}).get("data", [])
+        if not candles:
+            raise ValueError("Нет данных по свечам.")
+        columns = data["candles"]["columns"]
+        idx_t = columns.index("begin")
+        idx_p = columns.index("close")
+        times = [c[idx_t][11:16] for c in candles]
+        prices = [c[idx_p] for c in candles]
+        return times, prices
+    except Exception as e:
+        print(f"Ошибка при получении графика {ticker}: {e}")
+        return [], []
+
+
+def plot_price_chart(ticker: str, parent_frame):
+    """Draw intraday price chart for *ticker* inside *parent_frame*."""
+    times, prices = fetch_intraday_prices(ticker)
+    if not times or not prices:
+        return
+
+    fig, ax = plt.subplots(figsize=(4.8, 3), dpi=100)
+    fig.patch.set_facecolor("#1A1A1A")
+    ax.set_facecolor("#1A1A1A")
+    ax.plot(times, prices, linewidth=1.8, color=ux.ACCENT_COLOR)
+    ax.set_ylim(min(prices), max(prices))
+    ax.set_yticks(np.linspace(min(prices), max(prices), 5))
+    ax.set_yticklabels(
+        [f"{y:.2f}" for y in np.linspace(min(prices), max(prices), 5)],
+        color=ux.TEXT_COLOR,
+        fontsize=7,
+    )
+    ax.set_title("График цены за день", fontsize=9, color=ux.TEXT_COLOR)
+    ax.set_xticks([])
+    ax.set_xlabel("время", fontsize=8, color=ux.TEXT_COLOR, labelpad=10)
+    ax.tick_params(axis="y", labelsize=7, colors=ux.TEXT_COLOR)
+    ax.spines["bottom"].set_color(ux.TEXT_COLOR)
+    ax.spines["left"].set_color(ux.TEXT_COLOR)
+    ax.spines["top"].set_color("#1A1A1A")
+    ax.spines["right"].set_color("#1A1A1A")
+    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.3)
+    fig.tight_layout()
+
+    chart_canvas = FigureCanvasTkAgg(fig, master=parent_frame)
+    if hasattr(plot_price_chart, "canvas_widget"):
+        plot_price_chart.canvas_widget.get_tk_widget().destroy()
+    plot_price_chart.canvas_widget = chart_canvas
+    chart_canvas.draw()
+    chart_canvas.get_tk_widget().pack()

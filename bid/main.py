@@ -1,25 +1,26 @@
-import math
-import requests
 import customtkinter as ctk
 ctk.deactivate_automatic_dpi_awareness()
 import tkinter as tk
 from tkinter import messagebox
 import re
 import pandas as pd
-import numpy as np
 import datetime
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import stavki_ux as ux
 
-def fetch_moex_last_price(ticker: str) -> int:
-    """Return last traded price for the given ticker from MOEX."""
-    url = f"https://iss.moex.com/iss/engines/stock/markets/shares/securities/{ticker}.json"
-    r = requests.get(url, timeout=10)
-    data = r.json()
-    market_data = data['marketdata']['data'][0]
-    idx = data['marketdata']['columns'].index('LAST')
-    return round(float(market_data[idx]))
+from .data.moex import (
+    fetch_moex_last_price,
+    plot_price_chart,
+)
+from .logic.probability import (
+    initialize_table,
+    recalculate_all_probabilities,
+    update_bet,
+    get_prob,
+    process_express,
+    initialize_data,
+    calculate_coefficient,
+    apply_bet,
+)
+from .ui import styles as ux
 
 try:
     DEFAULT_CENTER_PRICE = fetch_moex_last_price("SBER")
@@ -27,67 +28,6 @@ except Exception as e:
     print(f"Ошибка при получении цены: {e}")
     DEFAULT_CENTER_PRICE = 110
 
-# --- price history helpers -------------------------------------------------
-
-def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the previous trading day."""
-    try:
-        yesterday = (datetime.datetime.now() - datetime.timedelta(days=1))
-        date = yesterday.strftime("%Y-%m-%d")
-        url = (
-            f"https://iss.moex.com/iss/engines/stock/markets/shares/"
-            f"securities/{ticker}/candles.json?from={date}&interval=1"
-        )
-        r = requests.get(url, timeout=10)
-        data = r.json()
-        candles = data.get("candles", {}).get("data", [])
-        if not candles:
-            raise ValueError("Нет данных по свечам.")
-        columns = data["candles"]["columns"]
-        idx_t = columns.index("begin")
-        idx_p = columns.index("close")
-        times = [c[idx_t][11:16] for c in candles]
-        prices = [c[idx_p] for c in candles]
-        return times, prices
-    except Exception as e:
-        print(f"Ошибка при получении графика {ticker}: {e}")
-        return [], []
-
-
-def plot_price_chart(ticker: str, parent_frame):
-    """Draw intraday price chart for *ticker* inside *parent_frame*."""
-    times, prices = fetch_intraday_prices(ticker)
-    if not times or not prices:
-        return
-
-    fig, ax = plt.subplots(figsize=(4.8, 3), dpi=100)
-    fig.patch.set_facecolor("#1A1A1A")
-    ax.set_facecolor("#1A1A1A")
-    ax.plot(times, prices, linewidth=1.8, color=ux.ACCENT_COLOR)
-    ax.set_ylim(min(prices), max(prices))
-    ax.set_yticks(np.linspace(min(prices), max(prices), 5))
-    ax.set_yticklabels(
-        [f"{y:.2f}" for y in np.linspace(min(prices), max(prices), 5)],
-        color=ux.TEXT_COLOR,
-        fontsize=7,
-    )
-    ax.set_title("График цены за день", fontsize=9, color=ux.TEXT_COLOR)
-    ax.set_xticks([])
-    ax.set_xlabel("время", fontsize=8, color=ux.TEXT_COLOR, labelpad=10)
-    ax.tick_params(axis="y", labelsize=7, colors=ux.TEXT_COLOR)
-    ax.spines["bottom"].set_color(ux.TEXT_COLOR)
-    ax.spines["left"].set_color(ux.TEXT_COLOR)
-    ax.spines["top"].set_color("#1A1A1A")
-    ax.spines["right"].set_color("#1A1A1A")
-    ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.3)
-    fig.tight_layout()
-
-    chart_canvas = FigureCanvasTkAgg(fig, master=parent_frame)
-    if hasattr(plot_price_chart, "canvas_widget"):
-        plot_price_chart.canvas_widget.get_tk_widget().destroy()
-    plot_price_chart.canvas_widget = chart_canvas
-    chart_canvas.draw()
-    chart_canvas.get_tk_widget().pack()
 
 # --- market price ranges ----------------------------------------------------
 
@@ -100,105 +40,6 @@ except Exception as e:
     print(f"Ошибка при получении цен: {e}")
     CENTER1, MIN1, MAX1 = 270, 260, 280
     CENTER2, MIN2, MAX2 = 160, 150, 170
-
-def probability(x: float, center_price: float) -> float:
-    """Return base probability for the given price."""
-    numerator = 100
-    denominator = ((x - center_price) / 4) ** 4 + 1
-    return numerator / denominator
-
-def initialize_table(center_price: float):
-    price_range = range(center_price - 10, center_price + 11)
-    table = []
-    for price in price_range:
-        prob = round(probability(price, center_price), 4)
-        table.append({
-            'Цена': price,
-            'Вероятность': prob,
-            'Ставка_да': 0.0,
-            'Ставка_нет': 0.0
-        })
-    return table
-
-def recalculate_all_probabilities(table, center_price: float):
-    for row in table:
-        price = row['Цена']
-        y1 = row['Ставка_да']
-        y2 = row['Ставка_нет']
-        P0 = probability(price, center_price)
-        h1 = P0 * 100_000
-        h2 = (100 - P0) * 100_000
-        denominator = y1 + y2 + h1 + h2
-        new_prob = round(0.5 * P0 + 0.5 * ((y1 + h1) / denominator * 100), 4)
-        row['Вероятность'] = new_prob
-
-def update_bet(table, price, amount, bet_type):
-    for row in table:
-        if row['Цена'] == price:
-            if bet_type == 'да':
-                row['Ставка_да'] = round(row['Ставка_да'] + amount, 2)
-            else:
-                row['Ставка_нет'] = round(row['Ставка_нет'] + amount, 2)
-            break
-
-def get_prob(table, price):
-    for row in table:
-        if row['Цена'] == price:
-            return row['Вероятность'] / 100
-    return None
-
-def process_express(table, price1, price2, amount):
-    p1 = get_prob(table, price1)
-    p2 = get_prob(table, price2)
-    if not p1 or not p2:
-        print("Ошибка: цены вне диапазона.")
-        return
-
-    w1 = math.log(1 / p1) / (math.log(1 / p1) + math.log(1 / p2))
-    w2 = 1 - w1
-
-    update_bet(table, price1, amount * w1, bet_type='нет')
-    update_bet(table, price2, amount * w2, bet_type='нет')
-
-# --- data for closing price bets -------------------------------------------
-
-INITIAL_BANK = 10_000_000
-
-def initialize_data(center, min_val, max_val):
-    prices = np.arange(min_val, max_val + 1)
-    weights = 1 / (((prices - center) / 4) ** 4 + 1) * 100
-    base_probs = weights / weights.sum()
-    return pd.DataFrame({
-        "Цена": prices,
-        "Ставки_доп": np.zeros_like(prices, dtype=int),
-        "Вероятность": base_probs,
-    })
-
-
-def calculate_coefficient(df, start, end):
-    sub = df[(df["Цена"] >= start) & (df["Цена"] <= end)]
-    p = sub["Вероятность"].sum()
-    if p == 0:
-        return 1.00
-    coef = round(0.95 / p, 3)
-    return max(coef, 1.00)
-
-
-def apply_bet(df, center, min_val, max_val, last_range, amount):
-    start, end = last_range
-    count = end - start + 1
-    add = amount / count
-    df["Ставки_доп"] = df["Ставки_доп"].astype(float)
-    mask = (df["Цена"] >= start) & (df["Цена"] <= end)
-    df.loc[mask, "Ставки_доп"] += float(add)
-    prices = df["Цена"].values
-    base_weights = 1 / (((prices - center) / 4) ** 4 + 1) * 100
-    base_probs = base_weights / base_weights.sum()
-    base_stakes = base_probs * INITIAL_BANK
-    total_stakes = base_stakes + df["Ставки_доп"]
-    stake_probs = total_stakes / total_stakes.sum()
-    df["Вероятность"] = 0.4 * base_probs + 0.6 * stake_probs
-    return df
 
 # --- global state -----------------------------------------------------------
 
@@ -276,7 +117,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     min_val = price_range.start
     max_val = price_range.stop - 1
     padding = 10
-    width = 320
+    width = 400
     marker_w = 6
     unit = width / (max_val - min_val)
     val_to_x = lambda v: int((v - min_val) * unit) + padding
@@ -779,7 +620,7 @@ ux.style_frame(chart_frame)
 chart_frame.pack(pady=5)
 
 range_question_label = ctk.CTkLabel(left_side, text="", font=(ux.FONT_FAMILY, 12))
-ux.style_label(range_question_label)
+ux.style_label(range_question_label, 12)
 range_question_label.pack(pady=5)
 
 scale = ctk.CTkFrame(left_side)
@@ -837,7 +678,7 @@ ctk.CTkButton(
     fg_color=ux.ACCENT_COLOR,
     hover_color=ux.HOVER_COLOR,
     text_color=ux.BG_COLOR,
-).pack(side="left", padx=10)
+).pack(side="left", padx=5)
 
 
 mono = ctk.CTkFont(family="Courier New", size=12)
