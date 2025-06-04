@@ -1,6 +1,7 @@
 import math
 import requests
 import customtkinter as ctk
+ctk.deactivate_automatic_dpi_awareness()
 import tkinter as tk
 from tkinter import messagebox
 import re
