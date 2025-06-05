@@ -59,10 +59,13 @@ def plot_price_chart(ticker: str, parent_frame):
     ax.set_yticklabels(
         [f"{y:.2f}" for y in np.linspace(min(prices), max(prices), 5)],
         color=ux.TEXT_COLOR,
-        fontsize=7,
+        fontsize=8,
     )
     ax.set_title("График цены за день", fontsize=9, color=ux.TEXT_COLOR)
-    ax.set_xticks([])
+    num_ticks = 6
+    idx = np.linspace(0, len(times) - 1, num_ticks, dtype=int)
+    ax.set_xticks(idx)
+    ax.set_xticklabels([times[i] for i in idx], color=ux.TEXT_COLOR, fontsize=8, rotation=45, ha="right")
     ax.set_xlabel("время", fontsize=8, color=ux.TEXT_COLOR, labelpad=10)
     ax.tick_params(axis="y", labelsize=7, colors=ux.TEXT_COLOR)
     ax.spines["bottom"].set_color(ux.TEXT_COLOR)
