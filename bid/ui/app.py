@@ -9,6 +9,10 @@ from ..data.moex import (
     fetch_moex_last_price,
     plot_price_chart,
 )
+from ..data.crypto import (
+    fetch_crypto_last_price,
+    plot_crypto_price_chart,
+)
 from ..logic.probability import (
     initialize_table,
     recalculate_all_probabilities,
@@ -32,12 +36,18 @@ except Exception as e:
 try:
     sber_price = fetch_moex_last_price("SBER")
     gazp_price = fetch_moex_last_price("GAZP")
+    btk_price = fetch_crypto_last_price("BTK")
+    dkk_price = fetch_crypto_last_price("DKK")
     CENTER1, MIN1, MAX1 = sber_price, sber_price - 10, sber_price + 10
     CENTER2, MIN2, MAX2 = gazp_price, gazp_price - 10, gazp_price + 10
+    CENTER3, MIN3, MAX3 = btk_price, btk_price - 1000, btk_price + 1000
+    CENTER4, MIN4, MAX4 = dkk_price, dkk_price - 1000, dkk_price + 1000
 except Exception as e:
     print(f"Ошибка при получении цен: {e}")
     CENTER1, MIN1, MAX1 = 270, 260, 280
     CENTER2, MIN2, MAX2 = 160, 150, 170
+    CENTER3, MIN3, MAX3 = 0, -1000, 1000
+    CENTER4, MIN4, MAX4 = 0, -1000, 1000
 
 # --- global state -----------------------------------------------------------
 current_type = None
@@ -48,15 +58,20 @@ embedded_bid_table_frame = None
 
 df_type1 = initialize_data(CENTER1, MIN1, MAX1)
 df_type2 = initialize_data(CENTER2, MIN2, MAX2)
+df_type3 = initialize_data(CENTER3, MIN3, MAX3)
+df_type4 = initialize_data(CENTER4, MIN4, MAX4)
 price_table1 = initialize_table(CENTER1)
 price_table2 = initialize_table(CENTER2)
+price_table3 = initialize_table(CENTER3)
+price_table4 = initialize_table(CENTER4)
 last_range = [None, None]
 
 
 # --- higher-level UI -------------------------------------------------------
 
 def add_to_history(bet_range, amount, coefficient, bet_type: str):
-    company = "Сбербанк" if current_type == 1 else "Газпром"
+    company_map = {1: "Сбербанк", 2: "Газпром", 3: "BTK", 4: "DKK"}
+    company = company_map.get(current_type, "-")
     entry = {
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "range": f"{bet_range[0]}–{bet_range[1]}",
@@ -117,7 +132,8 @@ def update_coef_label():
         range_value.configure(text="—")
         return
     try:
-        df = df_type1 if current_type == 1 else df_type2
+        df_map = {1: df_type1, 2: df_type2, 3: df_type3, 4: df_type4}
+        df = df_map.get(current_type)
         coef = calculate_coefficient(df, v1, v2)
         coef_value.configure(text=f"{coef}")
         range_value.configure(text=f"{v1 - 0.51:.2f}–{v2 + 0.5:.2f}")
@@ -157,14 +173,20 @@ def on_bet_click():
         amt = float(entry_bet.get().replace('.', '').replace(',', '.'))
         if amt <= 0:
             raise ValueError("Ставка должна быть положительной.")
-        global df_type1, df_type2
-        df = df_type1 if current_type == 1 else df_type2
-        center = CENTER1 if current_type == 1 else CENTER2
+        global df_type1, df_type2, df_type3, df_type4
+        df_map = {1: df_type1, 2: df_type2, 3: df_type3, 4: df_type4}
+        center_map = {1: CENTER1, 2: CENTER2, 3: CENTER3, 4: CENTER4}
+        df = df_map.get(current_type)
+        center = center_map.get(current_type)
         df_new = apply_bet(df, center, min_val, max_val, last_range, amt)
         if current_type == 1:
             df_type1 = df_new
-        else:
+        elif current_type == 2:
             df_type2 = df_new
+        elif current_type == 3:
+            df_type3 = df_new
+        elif current_type == 4:
+            df_type4 = df_new
         coef = float(coef_value.cget("text"))
         add_to_history(
             (round(last_range[0] - 0.51, 2), round(last_range[1] + 0.50, 2)),
@@ -213,7 +235,8 @@ def update_history_view():
 
 
 def update_bet_table():
-    df = df_type1 if current_type == 1 else df_type2
+    df_map = {1: df_type1, 2: df_type2, 3: df_type3, 4: df_type4}
+    df = df_map.get(current_type)
     tdf = df.copy()
     tdf.columns = ["Цена", "Капитализация", "Вероятность"]
     tdf["Капитализация"] = tdf["Капитализация"].round(0).astype(int)
@@ -229,7 +252,8 @@ def update_bet_table():
 
 def draw_axis_labels():
     canvas.delete("tick")
-    for i in range(min_val, max_val + 1, 2):
+    step = max(2, (max_val - min_val) // 10)
+    for i in range(min_val, max_val + 1, step):
         x = val_to_x(i)
         canvas.create_line(x, 20, x, 30, fill=ux.TEXT_COLOR, tags="tick")
         canvas.create_text(
@@ -244,10 +268,12 @@ def draw_axis_labels():
 
 def switch_view(view):
     global current_type, min_val, max_val, unit, embedded_bid_frame, embedded_bid_table_frame
-    for f in [type_select_frame, bet_frame, history_frame, info_frame]:
+    for f in [type_select_frame, crypto_select_frame, bet_frame, history_frame, info_frame]:
         f.pack_forget()
     if view == "bet":
         type_select_frame.pack(fill="both", expand=True)
+    elif view == "crypto":
+        crypto_select_frame.pack(fill="both", expand=True)
     elif view == "type1":
         current_type = 1
         min_val, max_val = MIN1, MAX1
@@ -304,6 +330,62 @@ def switch_view(view):
         )
         embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
+    elif view == "btk":
+        current_type = 3
+        min_val, max_val = MIN3, MAX3
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: BTK")
+        range_question_label.configure(text="Курс BTK")
+        plot_crypto_price_chart("BTK", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER3 - 200), val_to_x(CENTER3 + 200)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER3,
+            table=price_table3,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "dkk":
+        current_type = 4
+        min_val, max_val = MIN4, MAX4
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: DKK")
+        range_question_label.configure(text="Курс DKK")
+        plot_crypto_price_chart("DKK", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER4 - 200), val_to_x(CENTER4 + 200)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER4,
+            table=price_table4,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
     elif view == "history":
         update_history_view()
         history_frame.pack(fill="both", expand=True)
@@ -342,7 +424,8 @@ def run_app():
     ux.style_frame(menu)
     menu.pack(fill="both", expand=True, pady=5)
     for txt, cmd in [
-        ("Ставки", lambda: switch_view("bet")),
+        ("Акции", lambda: switch_view("bet")),
+        ("Криптовалюта", lambda: switch_view("crypto")),
         ("История", lambda: switch_view("history")),
         ("Информация", lambda: switch_view("info")),
     ]:
@@ -350,7 +433,7 @@ def run_app():
         ux.style_button(b)
         b.pack(side="left", padx=10)
 
-    global type_select_frame, bet_frame, history_frame, info_frame
+    global type_select_frame, crypto_select_frame, bet_frame, history_frame, info_frame
     global left_side, right_side, type_label, chart_frame, range_question_label
 
     type_select_frame = ctk.CTkFrame(main_container)
@@ -359,6 +442,13 @@ def run_app():
         b = ctk.CTkButton(type_select_frame, text=txt, command=lambda v=val: switch_view(v))
         ux.style_button(b)
         b.pack(pady=20)
+
+    crypto_select_frame = ctk.CTkFrame(main_container)
+    ux.style_frame(crypto_select_frame)
+    for txt, val in [("BTK", "btk"), ("DKK", "dkk")]:
+        cb = ctk.CTkButton(crypto_select_frame, text=txt, command=lambda v=val: switch_view(v))
+        ux.style_button(cb)
+        cb.pack(pady=20)
 
     bet_frame = ctk.CTkFrame(main_container)
     ux.style_frame(bet_frame)
