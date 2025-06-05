@@ -38,6 +38,8 @@ try:
     gazp_price = fetch_moex_last_price("GAZP")
     btk_price = fetch_crypto_last_price("BTK")
     dkk_price = fetch_crypto_last_price("DKK")
+    if btk_price == 0 or dkk_price == 0:
+        raise ValueError("crypto price unavailable")
     CENTER1, MIN1, MAX1 = sber_price, sber_price - 10, sber_price + 10
     CENTER2, MIN2, MAX2 = gazp_price, gazp_price - 10, gazp_price + 10
     CENTER3, MIN3, MAX3 = btk_price, btk_price - 1000, btk_price + 1000
