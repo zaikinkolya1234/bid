@@ -1,14 +1,15 @@
 import datetime
-import investpy
+import yfinance as yf
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.ticker import FuncFormatter
 from ..ui import styles as ux
 
+# Mapping of internal tickers to Yahoo Finance symbols
 CRYPTO_IDS = {
-    "BTK": "bitcoin",
-    "ETH": "ethereum",
+    "BTK": "BTC-USD",
+    "ETH": "ETH-USD",
 }
 
 
@@ -23,11 +24,13 @@ def _prepare_frame(frame):
 
 
 def fetch_crypto_last_price(ticker: str) -> int:
-    """Return the last known RUB price for the given crypto ticker."""
-    coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
+    """Return the last known USD price for the given crypto ticker."""
+    symbol = CRYPTO_IDS.get(ticker.upper(), ticker.upper())
     try:
-        df = investpy.get_crypto_recent_data(crypto=coin_id)
-        price = df["Close"].iloc[-1]
+        info = yf.Ticker(symbol).info
+        price = info.get("regularMarketPrice")
+        if price is None:
+            raise ValueError("price not found")
         return round(float(price))
     except Exception as e:
         print(f"Ошибка при получении цены {ticker}: {e}")
@@ -35,13 +38,13 @@ def fetch_crypto_last_price(ticker: str) -> int:
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the last month from Investing.com."""
-    coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
+    """Return time and price arrays for the last month from Yahoo Finance."""
+    symbol = CRYPTO_IDS.get(ticker.upper(), ticker.upper())
     try:
-        df = investpy.get_crypto_recent_data(crypto=coin_id)
+        df = yf.download(symbol, period="1mo", interval="1d", progress=False)
         times = [d.strftime("%d.%m") for d in df.index]
         prices = df["Close"].tolist()
-        return times[-30:], prices[-30:]
+        return times, prices
     except Exception as e:
         print(f"Ошибка при получении графика {ticker}: {e}")
         return [], []

@@ -1,5 +1,5 @@
 import datetime
-import investpy
+import yfinance as yf
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -17,27 +17,34 @@ def _prepare_frame(frame):
         delattr(frame, "chart_canvas")
 
 
+MOEX_SYMBOLS = {
+    "SBER": "SBER.ME",
+    "GAZP": "GAZP.ME",
+}
+
+
 def fetch_moex_last_price(ticker: str) -> int:
-    """Return last traded price for the given ticker from Investing.com."""
+    """Return last traded price for the given ticker from Yahoo Finance."""
+    symbol = MOEX_SYMBOLS.get(ticker.upper(), ticker)
     try:
-        end = datetime.datetime.now().strftime("%d/%m/%Y")
-        start = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime("%d/%m/%Y")
-        df = investpy.get_stock_historical_data(stock=ticker, country="russia", from_date=start, to_date=end)
-        return round(float(df["Close"].iloc[-1]))
+        info = yf.Ticker(symbol).info
+        price = info.get("regularMarketPrice")
+        if price is None:
+            raise ValueError("price not found")
+        return round(float(price))
     except Exception as e:
         print(f"Ошибка при получении цены {ticker}: {e}")
         return 0
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the last month using Investing.com."""
+    """Return time and price arrays for the last month using Yahoo Finance."""
+    symbol = MOEX_SYMBOLS.get(ticker.upper(), ticker)
     try:
-        end = datetime.datetime.now().strftime("%d/%m/%Y")
-        start = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime("%d/%m/%Y")
-        df = investpy.get_stock_historical_data(stock=ticker, country="russia", from_date=start, to_date=end)
+        df = yf.download(symbol, period="1mo", interval="1d", progress=False)
         times = [d.strftime("%d.%m") for d in df.index]
         prices = df["Close"].tolist()
-        return times[-30:], prices[-30:]
+        return times, prices
     except Exception as e:
         print(f"Ошибка при получении графика {ticker}: {e}")
         return [], []
