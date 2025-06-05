@@ -41,10 +41,12 @@ def fetch_moex_last_price(ticker: str) -> int:
 def fetch_intraday_prices(ticker: str):
     """Return time and price arrays for the last day using the MOEX ISS API."""
     symbol = ticker.upper()
-    start = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
+    now = datetime.datetime.now()
+    start = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
+    end = now.strftime("%Y-%m-%dT%H:%M:%S")
     url = (
         "https://iss.moex.com/iss/engines/stock/markets/shares/"
-        f"securities/{symbol}/candles.json?interval=60&from={start}"
+        f"securities/{symbol}/candles.json?interval=60&from={start}&till={end}"
     )
     try:
         data = requests.get(url, timeout=10).json()
@@ -52,6 +54,7 @@ def fetch_intraday_prices(ticker: str):
         if not candles:
             raise ValueError("no candle data")
         cols = data["candles"]["columns"]
+        candles.sort(key=lambda x: x[cols.index("begin")])
         idx_t = cols.index("begin")
         idx_c = cols.index("close")
         times = [c[idx_t][11:16] for c in candles]
@@ -72,7 +75,8 @@ def plot_price_chart(ticker: str, parent_frame):
     fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
     fig.patch.set_facecolor("#1A1A1A")
     ax.set_facecolor("#1A1A1A")
-    ax.plot(times, prices, linewidth=1.8, color=ux.ACCENT_COLOR)
+    ax.plot(range(len(times)), prices, linewidth=1.8, color=ux.ACCENT_COLOR)
+    ax.set_xlim(0, len(times) - 1)
     ax.set_ylim(min(prices), max(prices))
     ax.set_yticks(np.linspace(min(prices), max(prices), 5))
     formatter = FuncFormatter(lambda y, _: f"{y:.0f} ₽")

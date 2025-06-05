@@ -8,7 +8,7 @@ from ..ui import styles as ux
 
 # Mapping of internal tickers to Coingecko IDs
 CRYPTO_IDS = {
-    "BTK": "bitcoin",
+    "BTC": "bitcoin",
     "ETH": "ethereum",
 }
 
@@ -54,7 +54,7 @@ def fetch_intraday_prices(ticker: str):
         r = requests.get(url, timeout=10)
         r.raise_for_status()
         data = r.json()
-        prices = data.get("prices", [])
+        prices = sorted(data.get("prices", []), key=lambda x: x[0])
         times = [datetime.datetime.fromtimestamp(p[0] / 1000).strftime("%H:%M") for p in prices]
         vals = [p[1] for p in prices]
         return times, vals
@@ -72,7 +72,8 @@ def plot_crypto_price_chart(ticker: str, parent_frame):
     fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
     fig.patch.set_facecolor(ux.BG_COLOR)
     ax.set_facecolor(ux.BG_COLOR)
-    ax.plot(times, prices, linewidth=1.8, color=ux.ACCENT_COLOR)
+    ax.plot(range(len(times)), prices, linewidth=1.8, color=ux.ACCENT_COLOR)
+    ax.set_xlim(0, len(times) - 1)
     ax.set_ylim(min(prices), max(prices))
     ax.set_yticks(np.linspace(min(prices), max(prices), 5))
     formatter = FuncFormatter(lambda y, _: f"{y:.0f} ₽")
