@@ -30,8 +30,9 @@ def fetch_crypto_last_price(ticker: str) -> int:
         "https://api.coingecko.com/api/v3/simple/price"
         f"?ids={coin_id}&vs_currencies=usd"
     )
+    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        r = requests.get(url, timeout=10)
+        r = requests.get(url, timeout=10, headers=headers)
         r.raise_for_status()
         data = r.json()
         price = data.get(coin_id, {}).get("usd")
@@ -50,8 +51,9 @@ def fetch_intraday_prices(ticker: str):
         f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
         "?vs_currency=usd&days=1"
     )
+    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        r = requests.get(url, timeout=10)
+        r = requests.get(url, timeout=10, headers=headers)
         r.raise_for_status()
         data = r.json()
         prices = sorted(data.get("prices", []), key=lambda x: x[0])
