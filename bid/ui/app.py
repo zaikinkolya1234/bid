@@ -237,6 +237,12 @@ def update_history_view():
 def update_bet_table():
     df_map = {1: df_type1, 2: df_type2, 3: df_type3, 4: df_type4}
     df = df_map.get(current_type)
+    if df is None:
+        table_textbox.configure(state="normal")
+        table_textbox.delete("1.0", "end")
+        table_textbox.insert("1.0", "Выберите актив")
+        table_textbox.configure(state="disabled")
+        return
     tdf = df.copy()
     tdf.columns = ["Цена", "Капитализация", "Вероятность"]
     tdf["Капитализация"] = tdf["Капитализация"].round(0).astype(int)
