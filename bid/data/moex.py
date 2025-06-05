@@ -41,7 +41,7 @@ def fetch_moex_last_price(ticker: str) -> int:
 def fetch_intraday_prices(ticker: str):
     """Return time and price arrays for the last day using the MOEX ISS API."""
     symbol = ticker.upper()
-    start = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    start = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
     url = (
         "https://iss.moex.com/iss/engines/stock/markets/shares/"
         f"securities/{symbol}/candles.json?interval=60&from={start}"
