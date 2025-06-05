@@ -44,9 +44,10 @@ def fetch_intraday_prices(ticker: str):
     now = datetime.datetime.now()
     start = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
     end = now.strftime("%Y-%m-%dT%H:%M:%S")
+    # Use 10-minute candles instead of hourly to draw charts with more detail
     url = (
         "https://iss.moex.com/iss/engines/stock/markets/shares/"
-        f"securities/{symbol}/candles.json?interval=60&from={start}&till={end}"
+        f"securities/{symbol}/candles.json?interval=10&from={start}&till={end}"
     )
     try:
         data = requests.get(url, timeout=10).json()
