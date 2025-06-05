@@ -1,15 +1,15 @@
 import datetime
-import yfinance as yf
+import requests
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.ticker import FuncFormatter
 from ..ui import styles as ux
 
-# Mapping of internal tickers to Yahoo Finance symbols
+# Mapping of internal tickers to Coingecko IDs
 CRYPTO_IDS = {
-    "BTK": "BTC-USD",
-    "ETH": "ETH-USD",
+    "BTK": "bitcoin",
+    "ETH": "ethereum",
 }
 
 
@@ -25,10 +25,16 @@ def _prepare_frame(frame):
 
 def fetch_crypto_last_price(ticker: str) -> int:
     """Return the last known USD price for the given crypto ticker."""
-    symbol = CRYPTO_IDS.get(ticker.upper(), ticker.upper())
+    coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
+    url = (
+        "https://api.coingecko.com/api/v3/simple/price"
+        f"?ids={coin_id}&vs_currencies=usd"
+    )
     try:
-        info = yf.Ticker(symbol).info
-        price = info.get("regularMarketPrice")
+        r = requests.get(url, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+        price = data.get(coin_id, {}).get("usd")
         if price is None:
             raise ValueError("price not found")
         return round(float(price))
@@ -38,13 +44,20 @@ def fetch_crypto_last_price(ticker: str) -> int:
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the last month from Yahoo Finance."""
-    symbol = CRYPTO_IDS.get(ticker.upper(), ticker.upper())
+    """Return time and price arrays for the last month from Coingecko."""
+    coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
+    url = (
+        f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
+        "?vs_currency=usd&days=30"
+    )
     try:
-        df = yf.download(symbol, period="1mo", interval="1d", progress=False)
-        times = [d.strftime("%d.%m") for d in df.index]
-        prices = df["Close"].tolist()
-        return times, prices
+        r = requests.get(url, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+        prices = data.get("prices", [])
+        times = [datetime.datetime.fromtimestamp(p[0] / 1000).strftime("%d.%m") for p in prices]
+        vals = [p[1] for p in prices]
+        return times, vals
     except Exception as e:
         print(f"Ошибка при получении графика {ticker}: {e}")
         return [], []
