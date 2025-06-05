@@ -12,14 +12,24 @@ CRYPTO_IDS = {
 
 
 def fetch_crypto_last_price(ticker: str) -> int:
+    """Return the last known RUB price for the given crypto ticker."""
     coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
-    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=rub"
-    r = requests.get(url, timeout=10)
-    data = r.json()
-    price = data.get(coin_id, {}).get("rub")
-    if price is None:
-        raise ValueError(f"Price for {ticker} not found")
-    return round(float(price))
+    url = (
+        "https://api.coingecko.com/api/v3/simple/price"
+        f"?ids={coin_id}&vs_currencies=rub"
+    )
+    try:
+        r = requests.get(url, timeout=10)
+        r.raise_for_status()
+        data = r.json()
+        price = data.get(coin_id, {}).get("rub")
+        if price is None:
+            raise ValueError
+        return round(float(price))
+    except Exception as e:
+        # Return 0 on failure so the caller can fallback to defaults
+        print(f"Ошибка при получении цены {ticker}: {e}")
+        return 0
 
 
 def fetch_intraday_prices(ticker: str):
