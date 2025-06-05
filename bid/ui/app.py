@@ -37,13 +37,13 @@ try:
     sber_price = fetch_moex_last_price("SBER")
     gazp_price = fetch_moex_last_price("GAZP")
     btk_price = fetch_crypto_last_price("BTK")
-    dkk_price = fetch_crypto_last_price("DKK")
-    if btk_price == 0 or dkk_price == 0:
+    eth_price = fetch_crypto_last_price("ETH")
+    if btk_price == 0 or eth_price == 0:
         raise ValueError("crypto price unavailable")
     CENTER1, MIN1, MAX1 = sber_price, sber_price - 10, sber_price + 10
     CENTER2, MIN2, MAX2 = gazp_price, gazp_price - 10, gazp_price + 10
     CENTER3, MIN3, MAX3 = btk_price, btk_price - 1000, btk_price + 1000
-    CENTER4, MIN4, MAX4 = dkk_price, dkk_price - 1000, dkk_price + 1000
+    CENTER4, MIN4, MAX4 = eth_price, eth_price - 1000, eth_price + 1000
 except Exception as e:
     print(f"Ошибка при получении цен: {e}")
     CENTER1, MIN1, MAX1 = 270, 260, 280
@@ -72,7 +72,7 @@ last_range = [None, None]
 # --- higher-level UI -------------------------------------------------------
 
 def add_to_history(bet_range, amount, coefficient, bet_type: str):
-    company_map = {1: "Сбербанк", 2: "Газпром", 3: "BTK", 4: "DKK"}
+    company_map = {1: "Сбербанк", 2: "Газпром", 3: "BTK", 4: "ETH"}
     company = company_map.get(current_type, "-")
     entry = {
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -366,13 +366,13 @@ def switch_view(view):
         )
         embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
-    elif view == "dkk":
+    elif view == "eth":
         current_type = 4
         min_val, max_val = MIN4, MAX4
         unit = pixel_range / (max_val - min_val)
-        type_label.configure(text="Выбран: DKK")
-        range_question_label.configure(text="Курс DKK")
-        plot_crypto_price_chart("DKK", chart_frame)
+        type_label.configure(text="Выбран: ETH")
+        range_question_label.configure(text="Курс ETH")
+        plot_crypto_price_chart("ETH", chart_frame)
         draw_axis_labels()
         x1, x2 = val_to_x(CENTER4 - 200), val_to_x(CENTER4 + 200)
         canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
@@ -453,7 +453,7 @@ def run_app():
 
     crypto_select_frame = ctk.CTkFrame(main_container)
     ux.style_frame(crypto_select_frame)
-    for txt, val in [("BTK", "btk"), ("DKK", "dkk")]:
+    for txt, val in [("BTK", "btk"), ("ETH", "eth")]:
         cb = ctk.CTkButton(crypto_select_frame, text=txt, command=lambda v=val: switch_view(v))
         ux.style_button(cb)
         cb.pack(pady=20)
