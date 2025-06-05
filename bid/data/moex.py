@@ -1,5 +1,5 @@
 import datetime
-import requests
+import investpy
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -18,38 +18,26 @@ def _prepare_frame(frame):
 
 
 def fetch_moex_last_price(ticker: str) -> int:
-    """Return last traded price for the given ticker from MOEX."""
-    url = (
-        f"https://iss.moex.com/iss/engines/stock/markets/shares/"
-        f"securities/{ticker}.json"
-    )
-    r = requests.get(url, timeout=10)
-    data = r.json()
-    market_data = data["marketdata"]["data"][0]
-    idx = data["marketdata"]["columns"].index("LAST")
-    return round(float(market_data[idx]))
+    """Return last traded price for the given ticker from Investing.com."""
+    try:
+        end = datetime.datetime.now().strftime("%d/%m/%Y")
+        start = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime("%d/%m/%Y")
+        df = investpy.get_stock_historical_data(stock=ticker, country="russia", from_date=start, to_date=end)
+        return round(float(df["Close"].iloc[-1]))
+    except Exception as e:
+        print(f"Ошибка при получении цены {ticker}: {e}")
+        return 0
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the previous trading day."""
+    """Return time and price arrays for the last month using Investing.com."""
     try:
-        yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
-        date = yesterday.strftime("%Y-%m-%d")
-        url = (
-            f"https://iss.moex.com/iss/engines/stock/markets/shares/"
-            f"securities/{ticker}/candles.json?from={date}&interval=1"
-        )
-        r = requests.get(url, timeout=10)
-        data = r.json()
-        candles = data.get("candles", {}).get("data", [])
-        if not candles:
-            raise ValueError("Нет данных по свечам.")
-        columns = data["candles"]["columns"]
-        idx_t = columns.index("begin")
-        idx_p = columns.index("close")
-        times = [c[idx_t][11:16] for c in candles]
-        prices = [c[idx_p] for c in candles]
-        return times, prices
+        end = datetime.datetime.now().strftime("%d/%m/%Y")
+        start = (datetime.datetime.now() - datetime.timedelta(days=60)).strftime("%d/%m/%Y")
+        df = investpy.get_stock_historical_data(stock=ticker, country="russia", from_date=start, to_date=end)
+        times = [d.strftime("%d.%m") for d in df.index]
+        prices = df["Close"].tolist()
+        return times[-30:], prices[-30:]
     except Exception as e:
         print(f"Ошибка при получении графика {ticker}: {e}")
         return [], []

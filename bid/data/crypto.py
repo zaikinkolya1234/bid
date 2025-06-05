@@ -1,5 +1,5 @@
-import requests
 import datetime
+import investpy
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -25,33 +25,26 @@ def _prepare_frame(frame):
 def fetch_crypto_last_price(ticker: str) -> int:
     """Return the last known RUB price for the given crypto ticker."""
     coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
-    url = (
-        "https://api.coingecko.com/api/v3/simple/price"
-        f"?ids={coin_id}&vs_currencies=rub"
-    )
     try:
-        r = requests.get(url, timeout=10)
-        r.raise_for_status()
-        data = r.json()
-        price = data.get(coin_id, {}).get("rub")
-        if price is None:
-            raise ValueError
+        df = investpy.get_crypto_recent_data(crypto=coin_id)
+        price = df["Close"].iloc[-1]
         return round(float(price))
     except Exception as e:
-        # Return 0 on failure so the caller can fallback to defaults
         print(f"Ошибка при получении цены {ticker}: {e}")
         return 0
 
 
 def fetch_intraday_prices(ticker: str):
+    """Return time and price arrays for the last month from Investing.com."""
     coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
-    url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=rub&days=1"
-    r = requests.get(url, timeout=10)
-    data = r.json()
-    prices = data.get("prices", [])
-    times = [datetime.datetime.fromtimestamp(p[0] / 1000).strftime("%H:%M") for p in prices]
-    vals = [p[1] for p in prices]
-    return times, vals
+    try:
+        df = investpy.get_crypto_recent_data(crypto=coin_id)
+        times = [d.strftime("%d.%m") for d in df.index]
+        prices = df["Close"].tolist()
+        return times[-30:], prices[-30:]
+    except Exception as e:
+        print(f"Ошибка при получении графика {ticker}: {e}")
+        return [], []
 
 
 def plot_crypto_price_chart(ticker: str, parent_frame):
