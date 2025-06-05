@@ -30,9 +30,14 @@ def fetch_moex_last_price(ticker: str) -> int:
     try:
         data = requests.get(url, timeout=10).json()
         columns = data["marketdata"]["columns"]
-        values = data["marketdata"]["data"][0]
-        idx = columns.index("LAST")
-        return round(float(values[idx]))
+        board_idx = columns.index("BOARDID")
+        last_idx = columns.index("LAST")
+        for row in data["marketdata"]["data"]:
+            if row[board_idx] == "TQBR" and row[last_idx] is not None:
+                return round(float(row[last_idx]))
+        for row in data["marketdata"]["data"]:
+            if row[last_idx] is not None:
+                return round(float(row[last_idx]))
     except Exception as e:
         print(f"Ошибка при получении цены {ticker}: {e}")
         return 0
@@ -47,7 +52,7 @@ def fetch_intraday_prices(ticker: str):
     # Use 10-minute candles instead of hourly to draw charts with more detail
     url = (
         "https://iss.moex.com/iss/engines/stock/markets/shares/"
-        f"securities/{symbol}/candles.json?interval=10&from={start}&till={end}"
+        f"securities/{symbol}/candles.json?interval=10&from={start}&till={end}&boardid=TQBR"
     )
     try:
         data = requests.get(url, timeout=10).json()
