@@ -39,12 +39,12 @@ def fetch_moex_last_price(ticker: str) -> int:
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the last month using the MOEX ISS API."""
+    """Return time and price arrays for the last day using the MOEX ISS API."""
     symbol = ticker.upper()
-    start = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+    start = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     url = (
         "https://iss.moex.com/iss/engines/stock/markets/shares/"
-        f"securities/{symbol}/candles.json?interval=24&from={start}"
+        f"securities/{symbol}/candles.json?interval=60&from={start}"
     )
     try:
         data = requests.get(url, timeout=10).json()
@@ -54,7 +54,7 @@ def fetch_intraday_prices(ticker: str):
         cols = data["candles"]["columns"]
         idx_t = cols.index("begin")
         idx_c = cols.index("close")
-        times = [c[idx_t][:10] for c in candles]
+        times = [c[idx_t][11:16] for c in candles]
         prices = [c[idx_c] for c in candles]
         return times, prices
     except Exception as e:

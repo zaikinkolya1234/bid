@@ -44,18 +44,18 @@ def fetch_crypto_last_price(ticker: str) -> int:
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the last month from Coingecko."""
+    """Return time and price arrays for the last day from Coingecko."""
     coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
     url = (
         f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
-        "?vs_currency=usd&days=30"
+        "?vs_currency=usd&days=1"
     )
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
         data = r.json()
         prices = data.get("prices", [])
-        times = [datetime.datetime.fromtimestamp(p[0] / 1000).strftime("%d.%m") for p in prices]
+        times = [datetime.datetime.fromtimestamp(p[0] / 1000).strftime("%H:%M") for p in prices]
         vals = [p[1] for p in prices]
         return times, vals
     except Exception as e:
