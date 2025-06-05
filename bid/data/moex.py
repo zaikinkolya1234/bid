@@ -1,5 +1,5 @@
 import datetime
-import yfinance as yf
+import requests
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -17,33 +17,45 @@ def _prepare_frame(frame):
         delattr(frame, "chart_canvas")
 
 
-MOEX_SYMBOLS = {
-    "SBER": "SBER.ME",
-    "GAZP": "GAZP.ME",
-}
+
 
 
 def fetch_moex_last_price(ticker: str) -> int:
-    """Return last traded price for the given ticker from Yahoo Finance."""
-    symbol = MOEX_SYMBOLS.get(ticker.upper(), ticker)
+    """Return last traded price for the given ticker using the MOEX ISS API."""
+    symbol = ticker.upper()
+    url = (
+        "https://iss.moex.com/iss/engines/stock/markets/shares/"
+        f"securities/{symbol}.json"
+    )
     try:
-        info = yf.Ticker(symbol).info
-        price = info.get("regularMarketPrice")
-        if price is None:
-            raise ValueError("price not found")
-        return round(float(price))
+        data = requests.get(url, timeout=10).json()
+        columns = data["marketdata"]["columns"]
+        values = data["marketdata"]["data"][0]
+        idx = columns.index("LAST")
+        return round(float(values[idx]))
     except Exception as e:
         print(f"Ошибка при получении цены {ticker}: {e}")
         return 0
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the last month using Yahoo Finance."""
-    symbol = MOEX_SYMBOLS.get(ticker.upper(), ticker)
+    """Return time and price arrays for the last month using the MOEX ISS API."""
+    symbol = ticker.upper()
+    start = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y-%m-%d")
+    url = (
+        "https://iss.moex.com/iss/engines/stock/markets/shares/"
+        f"securities/{symbol}/candles.json?interval=24&from={start}"
+    )
     try:
-        df = yf.download(symbol, period="1mo", interval="1d", progress=False)
-        times = [d.strftime("%d.%m") for d in df.index]
-        prices = df["Close"].tolist()
+        data = requests.get(url, timeout=10).json()
+        candles = data.get("candles", {}).get("data", [])
+        if not candles:
+            raise ValueError("no candle data")
+        cols = data["candles"]["columns"]
+        idx_t = cols.index("begin")
+        idx_c = cols.index("close")
+        times = [c[idx_t][:10] for c in candles]
+        prices = [c[idx_c] for c in candles]
         return times, prices
     except Exception as e:
         print(f"Ошибка при получении графика {ticker}: {e}")
