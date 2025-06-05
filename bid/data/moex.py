@@ -3,7 +3,18 @@ import requests
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.ticker import FuncFormatter
 from ..ui import styles as ux
+
+
+def _prepare_frame(frame):
+    """Remove previous chart widget from *frame* if present."""
+    if hasattr(frame, "chart_canvas"):
+        try:
+            frame.chart_canvas.get_tk_widget().destroy()
+        except Exception:
+            pass
+        delattr(frame, "chart_canvas")
 
 
 def fetch_moex_last_price(ticker: str) -> int:
@@ -49,6 +60,7 @@ def plot_price_chart(ticker: str, parent_frame):
     times, prices = fetch_intraday_prices(ticker)
     if not times or not prices:
         return
+    _prepare_frame(parent_frame)
 
     fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
     fig.patch.set_facecolor("#1A1A1A")
@@ -56,11 +68,8 @@ def plot_price_chart(ticker: str, parent_frame):
     ax.plot(times, prices, linewidth=1.8, color=ux.ACCENT_COLOR)
     ax.set_ylim(min(prices), max(prices))
     ax.set_yticks(np.linspace(min(prices), max(prices), 5))
-    ax.set_yticklabels(
-        [f"{y:.2f}" for y in np.linspace(min(prices), max(prices), 5)],
-        color=ux.TEXT_COLOR,
-        fontsize=8,
-    )
+    formatter = FuncFormatter(lambda y, _: f"{y:.0f} ₽")
+    ax.yaxis.set_major_formatter(formatter)
     ax.set_title("График цены за день", fontsize=9, color=ux.TEXT_COLOR)
     num_ticks = 6
     idx = np.linspace(0, len(times) - 1, num_ticks, dtype=int)
@@ -76,8 +85,6 @@ def plot_price_chart(ticker: str, parent_frame):
     fig.tight_layout()
 
     chart_canvas = FigureCanvasTkAgg(fig, master=parent_frame)
-    if hasattr(plot_price_chart, "canvas_widget"):
-        plot_price_chart.canvas_widget.get_tk_widget().destroy()
-    plot_price_chart.canvas_widget = chart_canvas
+    parent_frame.chart_canvas = chart_canvas
     chart_canvas.draw()
     chart_canvas.get_tk_widget().pack()

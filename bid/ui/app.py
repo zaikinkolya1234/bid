@@ -267,7 +267,7 @@ def draw_axis_labels():
         canvas.create_text(
             x,
             40,
-            text=str(i),
+            text=f"{i} ₽",
             font=ctk.CTkFont(family=ux.FONT_FAMILY, size=8),
             fill=ux.TEXT_COLOR,
             tags="tick",
