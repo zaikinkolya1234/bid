@@ -496,7 +496,7 @@ def run_app():
     canvas.create_line(padding, 25, canvas_width - padding, 25, width=2, fill=ux.TEXT_COLOR)
     draw_axis_labels()
 
-    x1, x2 = val_to_x(108), val_to_x(112)
+    x1, x2 = val_to_x(CENTER1 - 2), val_to_x(CENTER1 + 2)
     marker_from = canvas.create_rectangle(x1, 15, x1 + marker_width, 35, fill=ux.ACCENT_COLOR, tags="marker")
     marker_to = canvas.create_rectangle(x2, 15, x2 + marker_width, 35, fill=ux.ACCENT_COLOR, tags="marker")
     canvas.tag_bind("marker", "<B1-Motion>", move_marker)
