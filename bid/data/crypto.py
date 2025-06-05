@@ -24,17 +24,17 @@ def _prepare_frame(frame):
 
 
 def fetch_crypto_last_price(ticker: str) -> int:
-    """Return the last known RUB price for the given crypto ticker."""
+    """Return the last known USD price for the given crypto ticker."""
     coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
     url = (
         "https://api.coingecko.com/api/v3/simple/price"
-        f"?ids={coin_id}&vs_currencies=rub"
+        f"?ids={coin_id}&vs_currencies=usd"
     )
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
         data = r.json()
-        price = data.get(coin_id, {}).get("rub")
+        price = data.get(coin_id, {}).get("usd")
         if price is None:
             raise ValueError("price not found")
         return round(float(price))
@@ -44,11 +44,11 @@ def fetch_crypto_last_price(ticker: str) -> int:
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the last day in RUB from Coingecko."""
+    """Return time and price arrays for the last day in USD from Coingecko."""
     coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
     url = (
         f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
-        "?vs_currency=rub&days=1"
+        "?vs_currency=usd&days=1"
     )
     try:
         r = requests.get(url, timeout=10)
@@ -76,7 +76,7 @@ def plot_crypto_price_chart(ticker: str, parent_frame):
     ax.set_xlim(0, len(times) - 1)
     ax.set_ylim(min(prices), max(prices))
     ax.set_yticks(np.linspace(min(prices), max(prices), 5))
-    formatter = FuncFormatter(lambda y, _: f"{y:.0f} ₽")
+    formatter = FuncFormatter(lambda y, _: f"{y:.0f} $")
     ax.yaxis.set_major_formatter(formatter)
     ax.set_title("График цены за день", fontsize=9, color=ux.TEXT_COLOR)
     num_ticks = 6

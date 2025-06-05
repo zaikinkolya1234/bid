@@ -56,6 +56,8 @@ current_type = None
 history = []
 embedded_bid_frame = None
 embedded_bid_table_frame = None
+currency_symbol = "₽"
+current_center = CENTER1
 
 
 df_type1 = initialize_data(CENTER1, MIN1, MAX1)
@@ -264,18 +266,20 @@ def draw_axis_labels():
     for i in range(min_val, max_val + 1, step):
         x = val_to_x(i)
         canvas.create_line(x, 20, x, 30, fill=ux.TEXT_COLOR, tags="tick")
+        color = ux.ACCENT_COLOR if i == current_center else ux.TEXT_COLOR
         canvas.create_text(
             x,
             40,
-            text=f"{i} ₽",
+            text=f"{i} {currency_symbol}",
             font=ctk.CTkFont(family=ux.FONT_FAMILY, size=8),
-            fill=ux.TEXT_COLOR,
+            fill=color,
             tags="tick",
         )
 
 
 def switch_view(view):
     global current_type, min_val, max_val, unit, embedded_bid_frame, embedded_bid_table_frame
+    global currency_symbol, current_center
     for f in [type_select_frame, crypto_select_frame, bet_frame, history_frame, info_frame]:
         f.pack_forget()
     if view == "bet":
@@ -284,6 +288,8 @@ def switch_view(view):
         crypto_select_frame.pack(fill="both", expand=True)
     elif view == "type1":
         current_type = 1
+        currency_symbol = "₽"
+        current_center = CENTER1
         min_val, max_val = MIN1, MAX1
         unit = pixel_range / (max_val - min_val)
         type_label.configure(text="Выбран: Сбербанк")
@@ -312,6 +318,8 @@ def switch_view(view):
         bet_frame.pack(fill="both", expand=True)
     elif view == "type2":
         current_type = 2
+        currency_symbol = "₽"
+        current_center = CENTER2
         min_val, max_val = MIN2, MAX2
         unit = pixel_range / (max_val - min_val)
         type_label.configure(text="Выбран: Газпром")
@@ -340,6 +348,8 @@ def switch_view(view):
         bet_frame.pack(fill="both", expand=True)
     elif view == "btc":
         current_type = 3
+        currency_symbol = "$"
+        current_center = CENTER3
         min_val, max_val = MIN3, MAX3
         unit = pixel_range / (max_val - min_val)
         type_label.configure(text="Выбран: BTC")
@@ -368,6 +378,8 @@ def switch_view(view):
         bet_frame.pack(fill="both", expand=True)
     elif view == "eth":
         current_type = 4
+        currency_symbol = "$"
+        current_center = CENTER4
         min_val, max_val = MIN4, MAX4
         unit = pixel_range / (max_val - min_val)
         type_label.configure(text="Выбран: ETH")
