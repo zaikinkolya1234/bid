@@ -2,7 +2,6 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import messagebox
 import re
-import pandas as pd
 import datetime
 
 from bid.data.moex import (
@@ -15,10 +14,6 @@ from bid.data.crypto import (
 )
 from bid.logic.probability import (
     initialize_table,
-    recalculate_all_probabilities,
-    update_bet,
-    get_prob,
-    process_express,
     initialize_data,
     calculate_coefficient,
     apply_bet,
