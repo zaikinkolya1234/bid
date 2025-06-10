@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.ticker import FuncFormatter
-from ..ui import styles as ux
+from bid.ui import styles as ux
 
 
 def _prepare_frame(frame):

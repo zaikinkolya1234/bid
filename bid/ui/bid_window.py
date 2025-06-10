@@ -2,15 +2,15 @@ import customtkinter as ctk
 import tkinter as tk
 import re
 
-from ..data.moex import fetch_moex_last_price
-from ..logic.probability import (
+from bid.data.moex import fetch_moex_last_price
+from bid.logic.probability import (
     initialize_table,
     recalculate_all_probabilities,
     update_bet,
     get_prob,
     process_express,
 )
-from . import styles as ux
+from bid.ui import styles as ux
 
 try:
     DEFAULT_CENTER_PRICE = fetch_moex_last_price("SBER")

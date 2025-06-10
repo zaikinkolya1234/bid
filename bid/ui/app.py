@@ -5,15 +5,15 @@ import re
 import pandas as pd
 import datetime
 
-from ..data.moex import (
+from bid.data.moex import (
     fetch_moex_last_price,
     plot_price_chart,
 )
-from ..data.crypto import (
+from bid.data.crypto import (
     fetch_crypto_last_price,
     plot_crypto_price_chart,
 )
-from ..logic.probability import (
+from bid.logic.probability import (
     initialize_table,
     recalculate_all_probabilities,
     update_bet,
@@ -23,8 +23,8 @@ from ..logic.probability import (
     calculate_coefficient,
     apply_bet,
 )
-from . import styles as ux
-from .bid_window import open_bid_window
+from bid.ui import styles as ux
+from bid.ui.bid_window import open_bid_window
 
 try:
     DEFAULT_CENTER_PRICE = fetch_moex_last_price("SBER")
