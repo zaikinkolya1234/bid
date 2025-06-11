@@ -44,35 +44,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         height = int(sh * 0.5)
         root.geometry(f"{width}x{height}+{(sw - width)//2}+{(sh - height)//2}")
         root.title("Ставки")
-        root.configure(fg_color="#000000")
-
-        gradient_canvas = tk.Canvas(root, highlightthickness=0, bd=0)
-        gradient_canvas.place(relx=0, rely=0, relwidth=1, relheight=1)
-
-        def draw_gradient(event=None):
-            gradient_canvas.delete("grad")
-            w, h = root.winfo_width(), root.winfo_height()
-            gradient_canvas.configure(width=w, height=h)
-            r1, g1, b1 = root.winfo_rgb("#000000")
-            r2, g2, b2 = root.winfo_rgb("#333333")
-            steps = w + h
-            for i in range(steps):
-                r = int((r1 + (r2 - r1) * i / steps) / 256)
-                g = int((g1 + (g2 - g1) * i / steps) / 256)
-                b = int((b1 + (b2 - b1) * i / steps) / 256)
-                color = f"#{r:02x}{g:02x}{b:02x}"
-                if i < h:
-                    x0, y0 = 0, h - i
-                else:
-                    x0, y0 = i - h, 0
-                if i < w:
-                    x1, y1 = i, 0
-                else:
-                    x1, y1 = w, i - w
-                gradient_canvas.create_line(x0, y0, x1, y1, fill=color, tags="grad")
-
-        root.bind("<Configure>", draw_gradient)
-        gradient_canvas.lower()
+        root.configure(fg_color=(ux.BG_COLOR, "#000000"))
         container = root
     else:
         container = ctk.CTkFrame(parent, fg_color=(ux.BG_COLOR, "#000000"))
