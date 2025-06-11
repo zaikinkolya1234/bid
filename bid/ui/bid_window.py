@@ -75,38 +75,33 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         return val
 
     def show_result_popup(amount, coef):
-        win = tk.Toplevel(container)
+        win = ctk.CTkToplevel(container)
         win.title("Результат ставки")
         sw = win.winfo_screenwidth()
         sh = win.winfo_screenheight()
         w = int(sw * 0.3)
         h = int(sh * 0.3)
         win.geometry(f"{w}x{h}+{(sw - w)//2}+{(sh - h)//2}")
-        win.configure(bg=ux.BG_COLOR)
-        for txt, fnt, col, pady in [
-            (
-                f"Коэффициент: {coef:.2f}",
-                ctk.CTkFont(family=ux.FONT_FAMILY, size=14),
-                ux.TEXT_COLOR,
-                10,
-            ),
-            (
-                f"Возможный выигрыш:\n{format_amount(amount * coef)}",
-                ctk.CTkFont(family=ux.FONT_FAMILY, size=18, weight="bold"),
-                ux.ACCENT_COLOR,
-                10,
-            ),
-        ]:
-            tk.Label(win, text=txt, font=fnt, fg=col, bg=ux.BG_COLOR, justify="center").pack(pady=pady)
-        tk.Button(
-            win,
-            text="OK",
-            command=win.destroy,
-            font=ctk.CTkFont(family=ux.FONT_FAMILY, size=10),
-            bg="#333",
-            fg=ux.TEXT_COLOR,
-            activebackground=ux.HOVER_COLOR,
-        ).pack(pady=5)
+
+        frame = ctk.CTkFrame(win)
+        ux.style_frame(frame)
+        frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        lbl_coef = ctk.CTkLabel(frame, text=f"Коэффициент: {coef:.2f}")
+        ux.style_label(lbl_coef)
+        lbl_coef.pack(pady=10)
+
+        lbl_win = ctk.CTkLabel(
+            frame,
+            text=f"Возможный выигрыш:\n{format_amount(amount * coef)}",
+            justify="center",
+        )
+        ux.style_title(lbl_win)
+        lbl_win.pack(pady=10)
+
+        btn_ok = ctk.CTkButton(frame, text="OK", command=win.destroy)
+        ux.style_button(btn_ok)
+        btn_ok.pack(pady=10)
 
     min_val = price_range.start
     max_val = price_range.stop - 1
@@ -136,7 +131,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     # --- Range selection ---
     lbl_range = ctk.CTkLabel(container, text="Выбор диапазона", anchor="center")
-    ux.style_label(lbl_range, 12)
+    ux.style_title(lbl_range)
     add_row(lbl_range)
 
     canvas_range = tk.Canvas(
@@ -261,7 +256,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
 
     # --- Price selection ---
     lbl_price = ctk.CTkLabel(container, text="Достижение цены", anchor="center")
-    ux.style_label(lbl_price, 12)
+    ux.style_title(lbl_price)
     add_row(lbl_price)
 
     canvas_price = tk.Canvas(
@@ -318,7 +313,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
     table_frame = ctk.CTkFrame(table_parent)
     ux.style_frame(table_frame)
     table_frame.pack(pady=10, fill="both", expand=True)
-    mono = ctk.CTkFont(family="Courier New", size=12)
+    mono = ctk.CTkFont(family=ux.FONT_FAMILY, size=12)
     table_textbox = ctk.CTkTextbox(table_frame, width=460, height=340)
     ux.style_textbox(table_textbox)
     table_textbox.configure(font=mono)

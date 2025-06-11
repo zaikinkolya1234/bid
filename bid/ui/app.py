@@ -546,7 +546,7 @@ def run_app():
     ux.style_button(btn_main_bet)
     btn_main_bet.pack(side="left", padx=5)
 
-    mono = ctk.CTkFont(family="Courier New", size=12)
+    mono = ctk.CTkFont(family=ux.FONT_FAMILY, size=12)
     table_frame = ctk.CTkFrame(right_side)
     ux.style_frame(table_frame)
     table_frame.pack(pady=10, fill="both", expand=True)
