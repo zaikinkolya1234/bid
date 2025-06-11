@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 # Холодная цветовая схема с повышенной контрастностью
-BG_COLOR = "#0D0D0D"         # Основной фон
+BG_COLOR = "#000000"         # Основной фон
 ACCENT_COLOR = "#F5C000"     # Яркий акцент (золото)
 HOVER_COLOR = "#FFDD55"      # Цвет при наведении
 TEXT_COLOR = "#E0E0E0"       # Светлый текст
@@ -33,8 +33,8 @@ def style_button(button: ctk.CTkButton):
     )
 
 def style_frame(frame: ctk.CTkFrame):
-    """Standard frame styling with rounded corners and glass-like gradient."""
-    frame.configure(fg_color=("#1F2224", BG_COLOR), corner_radius=CORNER_RADIUS)
+    """Standard frame styling with rounded corners."""
+    frame.configure(fg_color=BG_COLOR, corner_radius=CORNER_RADIUS)
 
 def style_label(label: ctk.CTkLabel, size=BASE_FONT_SIZE, weight="bold"):
     """Style for labels used across the interface."""
@@ -56,14 +56,14 @@ def style_entry(entry: ctk.CTkEntry, size=BASE_FONT_SIZE, weight="bold"):
         height=ENTRY_HEIGHT,
         corner_radius=CORNER_RADIUS,
         font=ctk.CTkFont(family=FONT_FAMILY, size=size, weight=weight),
-        fg_color="#262626",
+        fg_color=BG_COLOR,
         text_color=TEXT_COLOR,
     )
 
 def style_textbox(textbox: ctk.CTkTextbox, size=BASE_FONT_SIZE):
     textbox.configure(
         font=ctk.CTkFont(family=FONT_FAMILY, size=size),
-        fg_color="#1F2224",
+        fg_color=BG_COLOR,
         text_color=TEXT_COLOR,
         state="disabled"
     )
