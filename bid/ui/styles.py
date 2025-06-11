@@ -1,33 +1,37 @@
 import customtkinter as ctk
 
-# Цвета и шрифт — тёмный стиль в духе интерфейса на скриншоте
-BG_COLOR = "#0D0D0D"         # Основной фон
-ACCENT_COLOR = "#F5C000"     # Яркий акцент (золото)
-HOVER_COLOR = "#FFDD55"      # Цвет при наведении
-TEXT_COLOR = "#E0E0E0"       # Светлый текст
-BORDER_COLOR = "#333333"     # Цвет рамок и делений
+# Холодная цветовая схема с повышенной контрастностью
+BG_COLOR = "#181A1B"         # Основной фон
+ACCENT_COLOR = "#6EB3F7"     # Акцентные элементы (светлый синий)
+HOVER_COLOR = "#90C9FF"      # Цвет при наведении
+TEXT_COLOR = "#F1F5F9"       # Светлый текст
+BORDER_COLOR = "#2E3B4E"     # Цвет рамок и делений
 
-# Предпочтительный современный шрифт. Используем Inter, но при отсутствии
-# такого шрифта в системе tkinter автоматически подберёт замену.
-FONT_FAMILY = "Inter"
+# Более читаемый современный шрифт. При отсутствии автоматически
+# подберётся ближайшая замена.
+FONT_FAMILY = "Segoe UI"
 
-# Общий размер шрифта для большинства элементов. Значение немного больше
-# прежнего для улучшения читаемости на дисплеях с высоким DPI.
-BASE_FONT_SIZE = 12
+# Размеры и радиусы по умолчанию
+BASE_FONT_SIZE = 13
+TITLE_FONT_SIZE = 18
+CORNER_RADIUS = 14
+ENTRY_HEIGHT = 38
+BUTTON_HEIGHT = 38
 
 def style_button(button: ctk.CTkButton):
     """Apply unified style for action buttons."""
     button.configure(
-        corner_radius=12,
+        corner_radius=CORNER_RADIUS,
         fg_color=ACCENT_COLOR,
         hover_color=HOVER_COLOR,
+        height=BUTTON_HEIGHT,
         text_color="black",
         font=ctk.CTkFont(family=FONT_FAMILY, size=BASE_FONT_SIZE, weight="bold"),
     )
 
 def style_frame(frame: ctk.CTkFrame):
-    """Standard frame styling with rounded corners and slight padding."""
-    frame.configure(fg_color=BG_COLOR, corner_radius=12)
+    """Standard frame styling with rounded corners and glass-like gradient."""
+    frame.configure(fg_color=("#1F2224", BG_COLOR), corner_radius=CORNER_RADIUS)
 
 def style_label(label: ctk.CTkLabel, size=BASE_FONT_SIZE, weight="bold"):
     """Style for labels used across the interface."""
@@ -36,11 +40,18 @@ def style_label(label: ctk.CTkLabel, size=BASE_FONT_SIZE, weight="bold"):
         text_color=TEXT_COLOR,
     )
 
+def style_title(label: ctk.CTkLabel):
+    """Style for section titles."""
+    label.configure(
+        font=ctk.CTkFont(family=FONT_FAMILY, size=TITLE_FONT_SIZE, weight="bold"),
+        text_color=TEXT_COLOR,
+    )
+
 def style_entry(entry: ctk.CTkEntry, size=BASE_FONT_SIZE, weight="bold"):
     """Unified entry field styling."""
     entry.configure(
-        height=32,
-        corner_radius=12,
+        height=ENTRY_HEIGHT,
+        corner_radius=CORNER_RADIUS,
         font=ctk.CTkFont(family=FONT_FAMILY, size=size, weight=weight),
         fg_color="#262626",
         text_color=TEXT_COLOR,
@@ -49,7 +60,7 @@ def style_entry(entry: ctk.CTkEntry, size=BASE_FONT_SIZE, weight="bold"):
 def style_textbox(textbox: ctk.CTkTextbox, size=BASE_FONT_SIZE):
     textbox.configure(
         font=ctk.CTkFont(family=FONT_FAMILY, size=size),
-        fg_color="#1A1A1A",
+        fg_color="#1F2224",
         text_color=TEXT_COLOR,
         state="disabled"
     )
@@ -59,6 +70,6 @@ def style_box_frame(frame: ctk.CTkFrame):
         fg_color="transparent",
         border_color=BORDER_COLOR,
         border_width=2,
-        corner_radius=10
+        corner_radius=CORNER_RADIUS
     )
 
