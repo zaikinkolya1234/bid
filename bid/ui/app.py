@@ -459,7 +459,8 @@ def run_app():
             gradient_canvas.create_line(x0, y0, x1, y1, fill=color, tags="grad")
 
     root.bind("<Configure>", draw_gradient)
-    gradient_canvas.lower()
+    # Lower the entire gradient canvas widget so it stays in the background
+    gradient_canvas.tk.call("lower", gradient_canvas._w)
 
     main_container = ctk.CTkScrollableFrame(root, fg_color="transparent")
     main_container.pack(fill="both", expand=True)
