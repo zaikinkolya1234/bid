@@ -31,6 +31,14 @@ except Exception as e:
 try:
     sber_price = fetch_moex_last_price("SBER")
     gazp_price = fetch_moex_last_price("GAZP")
+    lkoh_price = fetch_moex_last_price("LKOH")
+    rosn_price = fetch_moex_last_price("ROSN")
+    gmkn_price = fetch_moex_last_price("GMKN")
+    nvtk_price = fetch_moex_last_price("NVTK")
+    plzl_price = fetch_moex_last_price("PLZL")
+    sngs_price = fetch_moex_last_price("SNGS")
+    mtss_price = fetch_moex_last_price("MTSS")
+    chmf_price = fetch_moex_last_price("CHMF")
     btc_price = fetch_crypto_last_price("BTC")
     eth_price = fetch_crypto_last_price("ETH")
     if btc_price == 0 or eth_price == 0:
@@ -39,12 +47,28 @@ try:
     CENTER2, MIN2, MAX2 = gazp_price, gazp_price - 10, gazp_price + 10
     CENTER3, MIN3, MAX3 = btc_price, btc_price - 1000, btc_price + 1000
     CENTER4, MIN4, MAX4 = eth_price, eth_price - 1000, eth_price + 1000
+    CENTER5, MIN5, MAX5 = lkoh_price, lkoh_price - 10, lkoh_price + 10
+    CENTER6, MIN6, MAX6 = rosn_price, rosn_price - 10, rosn_price + 10
+    CENTER7, MIN7, MAX7 = gmkn_price, gmkn_price - 10, gmkn_price + 10
+    CENTER8, MIN8, MAX8 = nvtk_price, nvtk_price - 10, nvtk_price + 10
+    CENTER9, MIN9, MAX9 = plzl_price, plzl_price - 10, plzl_price + 10
+    CENTER10, MIN10, MAX10 = sngs_price, sngs_price - 10, sngs_price + 10
+    CENTER11, MIN11, MAX11 = mtss_price, mtss_price - 10, mtss_price + 10
+    CENTER12, MIN12, MAX12 = chmf_price, chmf_price - 10, chmf_price + 10
 except Exception as e:
     print(f"Ошибка при получении цен: {e}")
     CENTER1, MIN1, MAX1 = 270, 260, 280
     CENTER2, MIN2, MAX2 = 160, 150, 170
     CENTER3, MIN3, MAX3 = 0, -1000, 1000
     CENTER4, MIN4, MAX4 = 0, -1000, 1000
+    CENTER5, MIN5, MAX5 = 0, -10, 10
+    CENTER6, MIN6, MAX6 = 0, -10, 10
+    CENTER7, MIN7, MAX7 = 0, -10, 10
+    CENTER8, MIN8, MAX8 = 0, -10, 10
+    CENTER9, MIN9, MAX9 = 0, -10, 10
+    CENTER10, MIN10, MAX10 = 0, -10, 10
+    CENTER11, MIN11, MAX11 = 0, -10, 10
+    CENTER12, MIN12, MAX12 = 0, -10, 10
 
 # --- global state -----------------------------------------------------------
 current_type = None
@@ -59,17 +83,46 @@ df_type1 = initialize_data(CENTER1, MIN1, MAX1)
 df_type2 = initialize_data(CENTER2, MIN2, MAX2)
 df_type3 = initialize_data(CENTER3, MIN3, MAX3)
 df_type4 = initialize_data(CENTER4, MIN4, MAX4)
+df_type5 = initialize_data(CENTER5, MIN5, MAX5)
+df_type6 = initialize_data(CENTER6, MIN6, MAX6)
+df_type7 = initialize_data(CENTER7, MIN7, MAX7)
+df_type8 = initialize_data(CENTER8, MIN8, MAX8)
+df_type9 = initialize_data(CENTER9, MIN9, MAX9)
+df_type10 = initialize_data(CENTER10, MIN10, MAX10)
+df_type11 = initialize_data(CENTER11, MIN11, MAX11)
+df_type12 = initialize_data(CENTER12, MIN12, MAX12)
 price_table1 = initialize_table(CENTER1)
 price_table2 = initialize_table(CENTER2)
 price_table3 = initialize_table(CENTER3)
 price_table4 = initialize_table(CENTER4)
+price_table5 = initialize_table(CENTER5)
+price_table6 = initialize_table(CENTER6)
+price_table7 = initialize_table(CENTER7)
+price_table8 = initialize_table(CENTER8)
+price_table9 = initialize_table(CENTER9)
+price_table10 = initialize_table(CENTER10)
+price_table11 = initialize_table(CENTER11)
+price_table12 = initialize_table(CENTER12)
 last_range = [None, None]
 
 
 # --- higher-level UI -------------------------------------------------------
 
 def add_to_history(bet_range, amount, coefficient, bet_type: str):
-    company_map = {1: "Сбербанк", 2: "Газпром", 3: "BTC", 4: "ETH"}
+    company_map = {
+        1: "Сбербанк",
+        2: "Газпром",
+        3: "BTC",
+        4: "ETH",
+        5: "ЛУКОЙЛ",
+        6: "Роснефть",
+        7: "Норникель",
+        8: "Новатэк",
+        9: "Полюс",
+        10: "Сургутнефтегаз",
+        11: "МТС",
+        12: "Северсталь",
+    }
     company = company_map.get(current_type, "-")
     entry = {
         "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -131,7 +184,20 @@ def update_coef_label():
         range_value.configure(text="—")
         return
     try:
-        df_map = {1: df_type1, 2: df_type2, 3: df_type3, 4: df_type4}
+        df_map = {
+            1: df_type1,
+            2: df_type2,
+            3: df_type3,
+            4: df_type4,
+            5: df_type5,
+            6: df_type6,
+            7: df_type7,
+            8: df_type8,
+            9: df_type9,
+            10: df_type10,
+            11: df_type11,
+            12: df_type12,
+        }
         df = df_map.get(current_type)
         coef = calculate_coefficient(df, v1, v2)
         coef_value.configure(text=f"{coef}")
@@ -173,8 +239,36 @@ def on_bet_click():
         if amt <= 0:
             raise ValueError("Ставка должна быть положительной.")
         global df_type1, df_type2, df_type3, df_type4
-        df_map = {1: df_type1, 2: df_type2, 3: df_type3, 4: df_type4}
-        center_map = {1: CENTER1, 2: CENTER2, 3: CENTER3, 4: CENTER4}
+        global df_type5, df_type6, df_type7, df_type8
+        global df_type9, df_type10, df_type11, df_type12
+        df_map = {
+            1: df_type1,
+            2: df_type2,
+            3: df_type3,
+            4: df_type4,
+            5: df_type5,
+            6: df_type6,
+            7: df_type7,
+            8: df_type8,
+            9: df_type9,
+            10: df_type10,
+            11: df_type11,
+            12: df_type12,
+        }
+        center_map = {
+            1: CENTER1,
+            2: CENTER2,
+            3: CENTER3,
+            4: CENTER4,
+            5: CENTER5,
+            6: CENTER6,
+            7: CENTER7,
+            8: CENTER8,
+            9: CENTER9,
+            10: CENTER10,
+            11: CENTER11,
+            12: CENTER12,
+        }
         df = df_map.get(current_type)
         center = center_map.get(current_type)
         df_new = apply_bet(df, center, min_val, max_val, last_range, amt)
@@ -186,6 +280,22 @@ def on_bet_click():
             df_type3 = df_new
         elif current_type == 4:
             df_type4 = df_new
+        elif current_type == 5:
+            df_type5 = df_new
+        elif current_type == 6:
+            df_type6 = df_new
+        elif current_type == 7:
+            df_type7 = df_new
+        elif current_type == 8:
+            df_type8 = df_new
+        elif current_type == 9:
+            df_type9 = df_new
+        elif current_type == 10:
+            df_type10 = df_new
+        elif current_type == 11:
+            df_type11 = df_new
+        elif current_type == 12:
+            df_type12 = df_new
         coef = float(coef_value.cget("text"))
         add_to_history(
             (round(last_range[0] - 0.51, 2), round(last_range[1] + 0.50, 2)),
@@ -234,7 +344,20 @@ def update_history_view():
 
 
 def update_bet_table():
-    df_map = {1: df_type1, 2: df_type2, 3: df_type3, 4: df_type4}
+    df_map = {
+        1: df_type1,
+        2: df_type2,
+        3: df_type3,
+        4: df_type4,
+        5: df_type5,
+        6: df_type6,
+        7: df_type7,
+        8: df_type8,
+        9: df_type9,
+        10: df_type10,
+        11: df_type11,
+        12: df_type12,
+    }
     df = df_map.get(current_type)
     if df is None:
         table_textbox.configure(state="normal")
@@ -341,6 +464,246 @@ def switch_view(view):
         )
         embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
+    elif view == "type5":
+        current_type = 5
+        currency_symbol = "₽"
+        current_center = CENTER5
+        min_val, max_val = MIN5, MAX5
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: ЛУКОЙЛ")
+        range_question_label.configure(text="Закрытия акции ЛУКОЙЛ")
+        plot_price_chart("LKOH", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER5 - 2), val_to_x(CENTER5 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER5,
+            table=price_table5,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "type6":
+        current_type = 6
+        currency_symbol = "₽"
+        current_center = CENTER6
+        min_val, max_val = MIN6, MAX6
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: Роснефть")
+        range_question_label.configure(text="Закрытия акции Роснефть")
+        plot_price_chart("ROSN", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER6 - 2), val_to_x(CENTER6 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER6,
+            table=price_table6,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "type7":
+        current_type = 7
+        currency_symbol = "₽"
+        current_center = CENTER7
+        min_val, max_val = MIN7, MAX7
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: Норникель")
+        range_question_label.configure(text="Закрытия акции Норникель")
+        plot_price_chart("GMKN", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER7 - 2), val_to_x(CENTER7 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER7,
+            table=price_table7,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "type8":
+        current_type = 8
+        currency_symbol = "₽"
+        current_center = CENTER8
+        min_val, max_val = MIN8, MAX8
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: Новатэк")
+        range_question_label.configure(text="Закрытия акции Новатэк")
+        plot_price_chart("NVTK", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER8 - 2), val_to_x(CENTER8 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER8,
+            table=price_table8,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "type9":
+        current_type = 9
+        currency_symbol = "₽"
+        current_center = CENTER9
+        min_val, max_val = MIN9, MAX9
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: Полюс")
+        range_question_label.configure(text="Закрытия акции Полюс")
+        plot_price_chart("PLZL", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER9 - 2), val_to_x(CENTER9 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER9,
+            table=price_table9,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "type10":
+        current_type = 10
+        currency_symbol = "₽"
+        current_center = CENTER10
+        min_val, max_val = MIN10, MAX10
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: Сургутнефтегаз")
+        range_question_label.configure(text="Закрытия акции Сургутнефтегаз")
+        plot_price_chart("SNGS", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER10 - 2), val_to_x(CENTER10 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER10,
+            table=price_table10,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "type11":
+        current_type = 11
+        currency_symbol = "₽"
+        current_center = CENTER11
+        min_val, max_val = MIN11, MAX11
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: МТС")
+        range_question_label.configure(text="Закрытия акции МТС")
+        plot_price_chart("MTSS", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER11 - 2), val_to_x(CENTER11 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER11,
+            table=price_table11,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "type12":
+        current_type = 12
+        currency_symbol = "₽"
+        current_center = CENTER12
+        min_val, max_val = MIN12, MAX12
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: Северсталь")
+        range_question_label.configure(text="Закрытия акции Северсталь")
+        plot_price_chart("CHMF", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER12 - 2), val_to_x(CENTER12 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER12,
+            table=price_table12,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
     elif view == "btc":
         current_type = 3
         currency_symbol = "$"
@@ -430,8 +793,8 @@ def run_app():
     root.geometry(f"{width}x{height}+{(screen_width - width)//2}+{(screen_height - height)//2}")
     update_dimensions(width)
     root.title("Ставки на закрытие акций")
-    root.configure(fg_color=(ux.BG_COLOR, "#000000"))
-    main_container = ctk.CTkScrollableFrame(root, fg_color=(ux.BG_COLOR, "#000000"))
+    root.configure(fg_color="#000000")
+    main_container = ctk.CTkScrollableFrame(root, fg_color="#000000")
     main_container.pack(fill="both", expand=True)
 
     menu = ctk.CTkFrame(main_container)
@@ -452,7 +815,18 @@ def run_app():
 
     type_select_frame = ctk.CTkFrame(main_container)
     ux.style_frame(type_select_frame)
-    for txt, val in [("Сбербанк", "type1"), ("Газпром", "type2")]:
+    for txt, val in [
+        ("Сбербанк", "type1"),
+        ("Газпром", "type2"),
+        ("ЛУКОЙЛ", "type5"),
+        ("Роснефть", "type6"),
+        ("Норникель", "type7"),
+        ("Новатэк", "type8"),
+        ("Полюс", "type9"),
+        ("Сургутнефтегаз", "type10"),
+        ("МТС", "type11"),
+        ("Северсталь", "type12"),
+    ]:
         b = ctk.CTkButton(type_select_frame, text=txt, command=lambda v=val: switch_view(v))
         ux.style_button(b)
         b.pack(pady=20)
