@@ -44,9 +44,10 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         height = int(sh * 0.5)
         root.geometry(f"{width}x{height}+{(sw - width)//2}+{(sh - height)//2}")
         root.title("Ставки")
+        root.configure(fg_color=(ux.BG_COLOR, "#000000"))
         container = root
     else:
-        container = ctk.CTkFrame(parent, fg_color=ux.BG_COLOR)
+        container = ctk.CTkFrame(parent, fg_color=(ux.BG_COLOR, "#000000"))
         root = None
 
     if table_parent is None:

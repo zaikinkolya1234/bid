@@ -430,9 +430,8 @@ def run_app():
     root.geometry(f"{width}x{height}+{(screen_width - width)//2}+{(screen_height - height)//2}")
     update_dimensions(width)
     root.title("Ставки на закрытие акций")
-    root.configure(fg_color=ux.BG_COLOR)
-
-    main_container = ctk.CTkScrollableFrame(root, fg_color=ux.BG_COLOR)
+    root.configure(fg_color=(ux.BG_COLOR, "#000000"))
+    main_container = ctk.CTkScrollableFrame(root, fg_color=(ux.BG_COLOR, "#000000"))
     main_container.pack(fill="both", expand=True)
 
     menu = ctk.CTkFrame(main_container)

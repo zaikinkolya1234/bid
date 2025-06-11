@@ -5,7 +5,8 @@ BG_COLOR = "#0D0D0D"         # Основной фон
 ACCENT_COLOR = "#F5C000"     # Яркий акцент (золото)
 HOVER_COLOR = "#FFDD55"      # Цвет при наведении
 TEXT_COLOR = "#E0E0E0"       # Светлый текст
-BORDER_COLOR = "#333333" 
+BORDER_COLOR = "#333333"
+SHADOW_COLOR = "#000000"
 
 # Более читаемый современный шрифт. При отсутствии автоматически
 # подберётся ближайшая замена.
@@ -25,6 +26,8 @@ def style_button(button: ctk.CTkButton):
         fg_color=ACCENT_COLOR,
         hover_color=HOVER_COLOR,
         height=BUTTON_HEIGHT,
+        border_width=2,
+        border_color=SHADOW_COLOR,
         text_color="black",
         font=ctk.CTkFont(family=FONT_FAMILY, size=BASE_FONT_SIZE, weight="bold"),
     )
