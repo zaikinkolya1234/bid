@@ -76,33 +76,55 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         return val
 
     def show_result_popup(amount, coef):
-        win = ctk.CTkToplevel(container)
-        win.title("Результат ставки")
-        sw = win.winfo_screenwidth()
-        sh = win.winfo_screenheight()
-        w = int(sw * 0.3)
-        h = int(sh * 0.3)
-        win.geometry(f"{w}x{h}+{(sw - w)//2}+{(sh - h)//2}")
+        """Show the bet result either in a new window or embedded."""
+        if root is None:
+            overlay = ctk.CTkFrame(container)
+            ux.style_frame(overlay)
+            overlay.place(relx=0.5, rely=0.5, anchor="center")
 
-        frame = ctk.CTkFrame(win)
-        ux.style_frame(frame)
-        frame.pack(fill="both", expand=True, padx=20, pady=20)
+            lbl_coef = ctk.CTkLabel(overlay, text=f"Коэффициент: {coef:.2f}")
+            ux.style_label(lbl_coef)
+            lbl_coef.pack(pady=10, padx=20)
 
-        lbl_coef = ctk.CTkLabel(frame, text=f"Коэффициент: {coef:.2f}")
-        ux.style_label(lbl_coef)
-        lbl_coef.pack(pady=10)
+            lbl_win = ctk.CTkLabel(
+                overlay,
+                text=f"Возможный выигрыш:\n{format_amount(amount * coef)}",
+                justify="center",
+            )
+            ux.style_title(lbl_win)
+            lbl_win.pack(pady=10, padx=20)
 
-        lbl_win = ctk.CTkLabel(
-            frame,
-            text=f"Возможный выигрыш:\n{format_amount(amount * coef)}",
-            justify="center",
-        )
-        ux.style_title(lbl_win)
-        lbl_win.pack(pady=10)
+            btn_ok = ctk.CTkButton(overlay, text="OK", command=overlay.destroy)
+            ux.style_button(btn_ok)
+            btn_ok.pack(pady=10)
+        else:
+            win = ctk.CTkToplevel(container)
+            win.title("Результат ставки")
+            sw = win.winfo_screenwidth()
+            sh = win.winfo_screenheight()
+            w = int(sw * 0.3)
+            h = int(sh * 0.3)
+            win.geometry(f"{w}x{h}+{(sw - w)//2}+{(sh - h)//2}")
 
-        btn_ok = ctk.CTkButton(frame, text="OK", command=win.destroy)
-        ux.style_button(btn_ok)
-        btn_ok.pack(pady=10)
+            frame = ctk.CTkFrame(win)
+            ux.style_frame(frame)
+            frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+            lbl_coef = ctk.CTkLabel(frame, text=f"Коэффициент: {coef:.2f}")
+            ux.style_label(lbl_coef)
+            lbl_coef.pack(pady=10)
+
+            lbl_win = ctk.CTkLabel(
+                frame,
+                text=f"Возможный выигрыш:\n{format_amount(amount * coef)}",
+                justify="center",
+            )
+            ux.style_title(lbl_win)
+            lbl_win.pack(pady=10)
+
+            btn_ok = ctk.CTkButton(frame, text="OK", command=win.destroy)
+            ux.style_button(btn_ok)
+            btn_ok.pack(pady=10)
 
     min_val = price_range.start
     max_val = price_range.stop - 1

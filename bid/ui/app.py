@@ -312,20 +312,26 @@ def on_bet_click():
 
 
 def show_result(amt, coef):
-    win = tk.Toplevel(root)
-    win.title("Результат ставки")
-    sw = win.winfo_screenwidth()
-    sh = win.winfo_screenheight()
-    w = int(sw * 0.3)
-    h = int(sh * 0.3)
-    win.geometry(f"{w}x{h}+{(sw - w)//2}+{(sh - h)//2}")
-    win.configure(bg="#1A1A1A")
-    for txt, fnt, col, pady in [
-        (f"Коэффициент: {coef:.2f}", ctk.CTkFont(family=ux.FONT_FAMILY, size=14), ux.TEXT_COLOR, 10),
-        (f"Возможный выигрыш:\n{format_amount(amt * coef)}", ctk.CTkFont(family=ux.FONT_FAMILY, size=16, weight="bold"), ux.ACCENT_COLOR, 10),
-    ]:
-        tk.Label(win, text=txt, font=fnt, fg=col, bg="#1A1A1A", justify="center").pack(pady=pady)
-    tk.Button(win, text="OK", command=win.destroy, font=ctk.CTkFont(family=ux.FONT_FAMILY, size=10), bg="#333", fg=ux.TEXT_COLOR, activebackground=ux.HOVER_COLOR).pack(pady=5)
+    """Display bet result inside the main application window."""
+    overlay = ctk.CTkFrame(root)
+    ux.style_frame(overlay)
+    overlay.place(relx=0.5, rely=0.5, anchor="center")
+
+    lbl_coef = ctk.CTkLabel(overlay, text=f"Коэффициент: {coef:.2f}")
+    ux.style_label(lbl_coef, 12)
+    lbl_coef.pack(padx=20, pady=10)
+
+    lbl_win = ctk.CTkLabel(
+        overlay,
+        text=f"Возможный выигрыш:\n{format_amount(amt * coef)}",
+        justify="center",
+    )
+    ux.style_title(lbl_win)
+    lbl_win.pack(padx=20, pady=10)
+
+    btn_ok = ctk.CTkButton(overlay, text="OK", command=overlay.destroy)
+    ux.style_button(btn_ok)
+    btn_ok.pack(pady=10)
 
 
 def update_history_view():
