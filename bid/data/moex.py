@@ -79,8 +79,8 @@ def plot_price_chart(ticker: str, parent_frame):
     _prepare_frame(parent_frame)
 
     fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
-    fig.patch.set_facecolor("#1A1A1A")
-    ax.set_facecolor("#1A1A1A")
+    fig.patch.set_facecolor(ux.BG_COLOR)
+    ax.set_facecolor(ux.BG_COLOR)
     ax.plot(range(len(times)), prices, linewidth=1.8, color=ux.ACCENT_COLOR)
     ax.set_xlim(0, len(times) - 1)
     ax.set_ylim(min(prices), max(prices))
@@ -96,8 +96,8 @@ def plot_price_chart(ticker: str, parent_frame):
     ax.tick_params(axis="y", labelsize=7, colors=ux.TEXT_COLOR)
     ax.spines["bottom"].set_color(ux.TEXT_COLOR)
     ax.spines["left"].set_color(ux.TEXT_COLOR)
-    ax.spines["top"].set_color("#1A1A1A")
-    ax.spines["right"].set_color("#1A1A1A")
+    ax.spines["top"].set_color(ux.BG_COLOR)
+    ax.spines["right"].set_color(ux.BG_COLOR)
     ax.grid(True, linestyle="--", linewidth=0.5, alpha=0.3)
     fig.tight_layout()
 
