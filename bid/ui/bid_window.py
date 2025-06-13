@@ -72,6 +72,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         box.pack(side="left", padx=5)
         val = ctk.CTkLabel(box, text="—" if "Диапазон" in label_text else "-")
         ux.style_label(val, 12)
+        val.configure(bg_color="transparent")
         val.pack(padx=6, pady=2)
         return val
 

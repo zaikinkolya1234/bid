@@ -43,6 +43,7 @@ def style_label(label: ctk.CTkLabel, size=BASE_FONT_SIZE, weight="bold"):
         font=ctk.CTkFont(family=FONT_FAMILY, size=size, weight=weight),
         text_color=TEXT_COLOR,
         fg_color="transparent",
+        bg_color="transparent",
     )
 
 def style_title(label: ctk.CTkLabel):
