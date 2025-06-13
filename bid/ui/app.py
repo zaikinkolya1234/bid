@@ -420,9 +420,9 @@ def switch_view(view):
     for f in [type_select_frame, crypto_select_frame, bet_frame, history_frame, info_frame]:
         f.pack_forget()
     if view == "bet":
-        type_select_frame.pack(fill="both", expand=True)
+        type_select_frame.pack(fill="both", expand=True, pady=(15, 0))
     elif view == "crypto":
-        crypto_select_frame.pack(fill="both", expand=True)
+        crypto_select_frame.pack(fill="both", expand=True, pady=(15, 0))
     elif view == "type1":
         current_type = 1
         currency_symbol = "₽"
@@ -848,14 +848,14 @@ def run_app():
     ]:
         b = ctk.CTkButton(type_select_frame, text=txt, command=lambda v=val: switch_view(v))
         ux.style_button(b)
-        b.pack(pady=5, padx=10, anchor="w")
+        b.pack(pady=5, padx=20, anchor="w")
 
     crypto_select_frame = ctk.CTkFrame(main_container)
     ux.style_frame(crypto_select_frame)
     for txt, val in [("BTC", "btc"), ("ETH", "eth")]:
         cb = ctk.CTkButton(crypto_select_frame, text=txt, command=lambda v=val: switch_view(v))
         ux.style_button(cb)
-        cb.pack(pady=20)
+        cb.pack(pady=5, padx=20, anchor="w")
 
     bet_frame = ctk.CTkFrame(main_container)
     ux.style_frame(bet_frame)
