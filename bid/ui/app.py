@@ -176,12 +176,21 @@ def format_bet_input():
         entry_bet.insert(0, f"{int(digits):,}".replace(",", "."))
 
 
+def _adjust_box_width(label: ctk.CTkLabel, extra: int = 12):
+    """Resize the surrounding frame based on the label's required width."""
+    label.update_idletasks()
+    box = label.master
+    box.configure(width=label.winfo_reqwidth() + extra)
+
+
 def update_coef_label():
     x1, x2 = canvas.coords(marker_from)[0], canvas.coords(marker_to)[0]
     v1, v2 = x_to_val(x1), x_to_val(x2)
     if v1 > v2:
         coef_value.configure(text="-")
         range_value.configure(text="—")
+        _adjust_box_width(coef_value)
+        _adjust_box_width(range_value)
         return
     try:
         df_map = {
@@ -202,10 +211,14 @@ def update_coef_label():
         coef = calculate_coefficient(df, v1, v2)
         coef_value.configure(text=f"{coef}")
         range_value.configure(text=f"{v1 - 0.51:.2f}–{v2 + 0.5:.2f}")
+        _adjust_box_width(coef_value)
+        _adjust_box_width(range_value)
         last_range[:] = v1, v2
     except Exception:
         coef_value.configure(text="Ошибка")
         range_value.configure(text="—")
+        _adjust_box_width(coef_value)
+        _adjust_box_width(range_value)
 
 
 def move_marker(event):
@@ -907,6 +920,7 @@ def run_app():
         value.configure(bg_color="transparent")
         value.pack(padx=6, pady=2, fill="both", expand=True)
         box.lift()
+        _adjust_box_width(value)
         return value
 
     global range_value, coef_value
