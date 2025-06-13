@@ -44,15 +44,26 @@ def fetch_moex_last_price(ticker: str) -> int:
 
 
 def fetch_intraday_prices(ticker: str):
-    """Return time and price arrays for the last day using the MOEX ISS API."""
+    """Return time and price arrays for the most recent trading day."""
     symbol = ticker.upper()
-    now = datetime.datetime.now()
-    start = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
-    end = now.strftime("%Y-%m-%dT%H:%M:%S")
-    # Use 5-minute candles for a denser set of points on the chart
+
+    # Determine the last available trading date
+    try:
+        date_url = (
+            "https://iss.moex.com/iss/history/engines/stock/markets/shares/"
+            f"securities/{symbol}.json?iss.meta=off&history.columns=TRADEDATE&sort_order=desc&limit=1"
+        )
+        resp = requests.get(date_url, timeout=10).json()
+        last_date = resp.get("history", {}).get("data", [[None]])[0][0]
+        if last_date is None:
+            raise ValueError("no trade date")
+    except Exception as e:
+        print(f"Ошибка при получении даты {ticker}: {e}")
+        return [], []
+
     url = (
         "https://iss.moex.com/iss/engines/stock/markets/shares/"
-        f"securities/{symbol}/candles.json?interval=5&from={start}&till={end}&boardid=TQBR"
+        f"securities/{symbol}/candles.json?interval=10&from={last_date}&till={last_date}&boardid=TQBR"
     )
     try:
         data = requests.get(url, timeout=10).json()
@@ -60,9 +71,9 @@ def fetch_intraday_prices(ticker: str):
         if not candles:
             raise ValueError("no candle data")
         cols = data["candles"]["columns"]
-        candles.sort(key=lambda x: x[cols.index("begin")])
         idx_t = cols.index("begin")
         idx_c = cols.index("close")
+        candles.sort(key=lambda x: x[idx_t])
         times = [c[idx_t][11:16] for c in candles]
         prices = [c[idx_c] for c in candles]
         return times, prices
