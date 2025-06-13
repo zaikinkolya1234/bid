@@ -67,7 +67,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         lbl = ctk.CTkLabel(frame, text=label_text)
         ux.style_label(lbl, 12)
         lbl.pack(side="left")
-        box = ctk.CTkFrame(frame, width=80)
+        box = ctk.CTkFrame(frame, width=ux.INFO_BOX_WIDTH, height=ux.INFO_BOX_HEIGHT)
         ux.style_box_frame(box)
         box.pack(side="left", padx=5)
         box.pack_propagate(False)

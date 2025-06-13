@@ -19,6 +19,8 @@ TITLE_FONT_SIZE = 18
 CORNER_RADIUS = 14
 ENTRY_HEIGHT = 38
 BUTTON_HEIGHT = 38
+INFO_BOX_HEIGHT = 26
+INFO_BOX_WIDTH = 100
 
 def style_button(button: ctk.CTkButton):
     """Apply unified style for action buttons."""
