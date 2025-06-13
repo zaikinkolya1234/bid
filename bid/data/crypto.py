@@ -1,10 +1,27 @@
 import datetime
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.ticker import FuncFormatter
 from bid.ui import styles as ux
+
+_session = requests.Session()
+_retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+_adapter = HTTPAdapter(max_retries=_retry)
+_session.mount("https://", _adapter)
+_session.headers.update({"User-Agent": "Mozilla/5.0"})
+
+
+def _get_json(url):
+    try:
+        response = _session.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except Exception as exc:
+        raise exc
 
 # Mapping of internal tickers to Coingecko IDs
 CRYPTO_IDS = {
@@ -37,11 +54,8 @@ def fetch_crypto_last_price(ticker: str) -> int:
         "https://api.coingecko.com/api/v3/simple/price"
         f"?ids={coin_id}&vs_currencies=usd"
     )
-    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        r = requests.get(url, timeout=10, headers=headers)
-        r.raise_for_status()
-        data = r.json()
+        data = _get_json(url)
         price = data.get(coin_id, {}).get("usd")
         if price is None:
             raise ValueError("price not found")
@@ -58,11 +72,8 @@ def fetch_intraday_prices(ticker: str):
         f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
         "?vs_currency=usd&days=1"
     )
-    headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        r = requests.get(url, timeout=10, headers=headers)
-        r.raise_for_status()
-        data = r.json()
+        data = _get_json(url)
         prices = sorted(data.get("prices", []), key=lambda x: x[0])
         times = [datetime.datetime.fromtimestamp(p[0] / 1000).strftime("%H:%M") for p in prices]
         vals = [p[1] for p in prices]
