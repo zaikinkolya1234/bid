@@ -848,7 +848,7 @@ def run_app():
     ]:
         b = ctk.CTkButton(type_select_frame, text=txt, command=lambda v=val: switch_view(v))
         ux.style_button(b)
-        b.pack(pady=20)
+        b.pack(pady=5, padx=10, anchor="w")
 
     crypto_select_frame = ctk.CTkFrame(main_container)
     ux.style_frame(crypto_select_frame)
