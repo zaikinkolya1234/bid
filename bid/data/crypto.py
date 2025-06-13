@@ -71,7 +71,10 @@ def plot_crypto_price_chart(ticker: str, parent_frame):
         return
     _prepare_frame(parent_frame)
 
-    fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
+    parent_frame.update_idletasks()
+    width_px = max(parent_frame.winfo_width(), 600)
+    fig_width = width_px / 100
+    fig, ax = plt.subplots(figsize=(fig_width, 4), dpi=100)
     fig.patch.set_facecolor(ux.BG_COLOR)
     ax.set_facecolor(ux.BG_COLOR)
     ax.plot(range(len(times)), prices, linewidth=1.8, color=ux.ACCENT_COLOR)
@@ -80,13 +83,13 @@ def plot_crypto_price_chart(ticker: str, parent_frame):
     ax.set_yticks(np.linspace(min(prices), max(prices), 5))
     formatter = FuncFormatter(lambda y, _: f"{y:.0f} $")
     ax.yaxis.set_major_formatter(formatter)
-    ax.set_title("График цены за день", fontsize=9, color=ux.TEXT_COLOR)
+    ax.set_title("График цены за день", fontsize=11, color=ux.TEXT_COLOR)
     num_ticks = 6
     idx = np.linspace(0, len(times) - 1, num_ticks, dtype=int)
     ax.set_xticks(idx)
-    ax.set_xticklabels([times[i] for i in idx], color=ux.TEXT_COLOR, fontsize=8, rotation=45, ha="right")
-    ax.set_xlabel("время", fontsize=8, color=ux.TEXT_COLOR, labelpad=10)
-    ax.tick_params(axis="y", labelsize=7, colors=ux.TEXT_COLOR)
+    ax.set_xticklabels([times[i] for i in idx], color=ux.TEXT_COLOR, fontsize=10, rotation=45, ha="right")
+    ax.set_xlabel("время", fontsize=10, color=ux.TEXT_COLOR, labelpad=10)
+    ax.tick_params(axis="y", labelsize=9, colors=ux.TEXT_COLOR)
     ax.spines["bottom"].set_color(ux.TEXT_COLOR)
     ax.spines["left"].set_color(ux.TEXT_COLOR)
     ax.spines["top"].set_color(ux.BG_COLOR)
@@ -97,4 +100,4 @@ def plot_crypto_price_chart(ticker: str, parent_frame):
     chart_canvas = FigureCanvasTkAgg(fig, master=parent_frame)
     parent_frame.chart_canvas = chart_canvas
     chart_canvas.draw()
-    chart_canvas.get_tk_widget().pack()
+    chart_canvas.get_tk_widget().pack(fill="both", expand=True)
