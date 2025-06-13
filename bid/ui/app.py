@@ -41,7 +41,6 @@ try:
     chmf_price = fetch_moex_last_price("CHMF")
     btc_price = fetch_crypto_last_price("BTC")
     eth_price = fetch_crypto_last_price("ETH")
-    usdt_price = fetch_crypto_last_price("USDT")
     bnb_price = fetch_crypto_last_price("BNB")
     sol_price = fetch_crypto_last_price("SOL")
     usdc_price = fetch_crypto_last_price("USDC")
@@ -63,7 +62,6 @@ try:
     CENTER10, MIN10, MAX10 = sngs_price, sngs_price - 10, sngs_price + 10
     CENTER11, MIN11, MAX11 = mtss_price, mtss_price - 10, mtss_price + 10
     CENTER12, MIN12, MAX12 = chmf_price, chmf_price - 10, chmf_price + 10
-    delta_usdt = max(1, int(usdt_price * 0.02))
     delta_bnb = max(1, int(bnb_price * 0.02))
     delta_sol = max(1, int(sol_price * 0.02))
     delta_usdc = max(1, int(usdc_price * 0.02))
@@ -71,7 +69,6 @@ try:
     delta_ton = max(1, int(ton_price * 0.02))
     delta_ada = max(1, int(ada_price * 0.02))
     delta_doge = max(1, int(doge_price * 0.02))
-    CENTER13, MIN13, MAX13 = usdt_price, usdt_price - delta_usdt, usdt_price + delta_usdt
     CENTER14, MIN14, MAX14 = bnb_price, bnb_price - delta_bnb, bnb_price + delta_bnb
     CENTER15, MIN15, MAX15 = sol_price, sol_price - delta_sol, sol_price + delta_sol
     CENTER16, MIN16, MAX16 = usdc_price, usdc_price - delta_usdc, usdc_price + delta_usdc
@@ -115,7 +112,6 @@ df_type9 = initialize_data(CENTER9, MIN9, MAX9)
 df_type10 = initialize_data(CENTER10, MIN10, MAX10)
 df_type11 = initialize_data(CENTER11, MIN11, MAX11)
 df_type12 = initialize_data(CENTER12, MIN12, MAX12)
-df_type13 = initialize_data(CENTER13, MIN13, MAX13)
 df_type14 = initialize_data(CENTER14, MIN14, MAX14)
 df_type15 = initialize_data(CENTER15, MIN15, MAX15)
 df_type16 = initialize_data(CENTER16, MIN16, MAX16)
@@ -135,7 +131,6 @@ price_table9 = initialize_table(CENTER9)
 price_table10 = initialize_table(CENTER10)
 price_table11 = initialize_table(CENTER11)
 price_table12 = initialize_table(CENTER12)
-price_table13 = initialize_table(CENTER13)
 price_table14 = initialize_table(CENTER14)
 price_table15 = initialize_table(CENTER15)
 price_table16 = initialize_table(CENTER16)
@@ -162,7 +157,6 @@ def add_to_history(bet_range, amount, coefficient, bet_type: str):
         10: "Сургутнефтегаз",
         11: "МТС",
         12: "Северсталь",
-        13: "Tether",
         14: "Binance Coin",
         15: "Solana",
         16: "USD Coin",
@@ -254,7 +248,6 @@ def update_coef_label():
             10: df_type10,
             11: df_type11,
             12: df_type12,
-            13: df_type13,
             14: df_type14,
             15: df_type15,
             16: df_type16,
@@ -310,7 +303,7 @@ def on_bet_click():
         global df_type1, df_type2, df_type3, df_type4
         global df_type5, df_type6, df_type7, df_type8
         global df_type9, df_type10, df_type11, df_type12
-        global df_type13, df_type14, df_type15, df_type16
+        global df_type14, df_type15, df_type16
         global df_type17, df_type18, df_type19, df_type20
         df_map = {
             1: df_type1,
@@ -325,7 +318,6 @@ def on_bet_click():
             10: df_type10,
             11: df_type11,
             12: df_type12,
-            13: df_type13,
             14: df_type14,
             15: df_type15,
             16: df_type16,
@@ -347,7 +339,6 @@ def on_bet_click():
             10: CENTER10,
             11: CENTER11,
             12: CENTER12,
-            13: CENTER13,
             14: CENTER14,
             15: CENTER15,
             16: CENTER16,
@@ -383,8 +374,6 @@ def on_bet_click():
             df_type11 = df_new
         elif current_type == 12:
             df_type12 = df_new
-        elif current_type == 13:
-            df_type13 = df_new
         elif current_type == 14:
             df_type14 = df_new
         elif current_type == 15:
@@ -466,7 +455,6 @@ def update_bet_table():
         10: df_type10,
         11: df_type11,
         12: df_type12,
-        13: df_type13,
         14: df_type14,
         15: df_type15,
         16: df_type16,
@@ -881,36 +869,6 @@ def switch_view(view):
         )
         embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
-    elif view == "usdt":
-        current_type = 13
-        currency_symbol = "$"
-        current_center = CENTER13
-        min_val, max_val = MIN13, MAX13
-        unit = pixel_range / (max_val - min_val)
-        type_label.configure(text="Выбран: USDT")
-        range_question_label.configure(text="Курс USDT")
-        plot_crypto_price_chart("USDT", chart_frame)
-        draw_axis_labels()
-        x1, x2 = val_to_x(CENTER13 - 2), val_to_x(CENTER13 + 2)
-        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
-        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
-        entry_bet.delete(0, "end")
-        update_coef_label()
-        update_bet_table()
-        if embedded_bid_frame:
-            embedded_bid_frame.destroy()
-        if embedded_bid_table_frame:
-            embedded_bid_table_frame.destroy()
-        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
-            parent=left_side,
-            table_parent=right_side,
-            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
-            center_price=CENTER13,
-            table=price_table13,
-            axis_width=pixel_range,
-        )
-        embedded_bid_frame.pack(pady=10, fill="x")
-        bet_frame.pack(fill="both", expand=True)
     elif view == "bnb":
         current_type = 14
         currency_symbol = "$"
@@ -1193,7 +1151,6 @@ def run_app():
     for txt, val in [
         ("BTC", "btc"),
         ("ETH", "eth"),
-        ("USDT", "usdt"),
         ("BNB", "bnb"),
         ("SOL", "sol"),
         ("USDC", "usdc"),
