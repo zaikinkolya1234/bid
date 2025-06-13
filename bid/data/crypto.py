@@ -74,7 +74,7 @@ def plot_crypto_price_chart(ticker: str, parent_frame):
     parent_frame.update_idletasks()
     width_px = max(parent_frame.winfo_width(), 600)
     fig_width = width_px / 100
-    fig, ax = plt.subplots(figsize=(fig_width, 4), dpi=100)
+    fig, ax = plt.subplots(figsize=(fig_width, 5), dpi=100)
     fig.patch.set_facecolor(ux.BG_COLOR)
     ax.set_facecolor(ux.BG_COLOR)
     ax.plot(range(len(times)), prices, linewidth=1.8, color=ux.ACCENT_COLOR)

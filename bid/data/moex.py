@@ -49,10 +49,10 @@ def fetch_intraday_prices(ticker: str):
     now = datetime.datetime.now()
     start = (now - datetime.timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%S")
     end = now.strftime("%Y-%m-%dT%H:%M:%S")
-    # Use 10-minute candles instead of hourly to draw charts with more detail
+    # Use 5-minute candles for a denser set of points on the chart
     url = (
         "https://iss.moex.com/iss/engines/stock/markets/shares/"
-        f"securities/{symbol}/candles.json?interval=10&from={start}&till={end}&boardid=TQBR"
+        f"securities/{symbol}/candles.json?interval=5&from={start}&till={end}&boardid=TQBR"
     )
     try:
         data = requests.get(url, timeout=10).json()
@@ -81,7 +81,7 @@ def plot_price_chart(ticker: str, parent_frame):
     parent_frame.update_idletasks()
     width_px = max(parent_frame.winfo_width(), 600)
     fig_width = width_px / 100
-    fig, ax = plt.subplots(figsize=(fig_width, 4), dpi=100)
+    fig, ax = plt.subplots(figsize=(fig_width, 5), dpi=100)
     fig.patch.set_facecolor(ux.BG_COLOR)
     ax.set_facecolor(ux.BG_COLOR)
     ax.plot(range(len(times)), prices, linewidth=1.8, color=ux.ACCENT_COLOR)

@@ -73,7 +73,7 @@ def style_box_frame(frame: ctk.CTkFrame):
     frame.configure(
         fg_color="transparent",
         border_color=BORDER_COLOR,
-        border_width=0,
-        corner_radius=0
+        border_width=2,
+        corner_radius=CORNER_RADIUS
     )
 
