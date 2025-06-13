@@ -149,7 +149,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
                 40,
                 text=str(i),
                 fill=ux.TEXT_COLOR,
-                font=ctk.CTkFont(family=ux.FONT_FAMILY, size=8),
+                font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12),
             )
 
     # --- Range selection ---

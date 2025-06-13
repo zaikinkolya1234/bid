@@ -395,7 +395,7 @@ def draw_axis_labels():
             x,
             40,
             text=f"{i} {currency_symbol}",
-            font=ctk.CTkFont(family=ux.FONT_FAMILY, size=8),
+            font=ctk.CTkFont(family=ux.FONT_FAMILY, size=12),
             fill=color,
             tags="tick",
         )
