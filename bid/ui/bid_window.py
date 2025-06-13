@@ -60,6 +60,10 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         else:
             widget.pack(pady=5, padx=10, fill="both", expand=True, **pack_opts)
 
+    def _adjust_box_width(label: ctk.CTkLabel, extra: int = 12):
+        label.update_idletasks()
+        label.master.configure(width=label.winfo_reqwidth() + extra)
+
     def create_res(parent, label_text):
         frame = ctk.CTkFrame(parent)
         ux.style_frame(frame)
@@ -76,6 +80,7 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         val.configure(fg_color="transparent", bg_color="transparent")
         val.pack(padx=6, pady=2, fill="both", expand=True)
         box.lift()
+        _adjust_box_width(val)
         return val
 
     def show_result_popup(amount, coef):
@@ -208,6 +213,8 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         if v1 > v2:
             coef_label_range.configure(text="-")
             range_value.configure(text="—")
+            _adjust_box_width(coef_label_range)
+            _adjust_box_width(range_value)
             return
 
         if v1 >= center_price:
@@ -226,11 +233,15 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         if prob_inside <= 0:
             coef_label_range.configure(text="-")
             range_value.configure(text=f"{v1}-{v2}")
+            _adjust_box_width(coef_label_range)
+            _adjust_box_width(range_value)
             return
 
         coef = round(max(1, 95 / (prob_inside * 100)), 2)
         coef_label_range.configure(text=str(coef))
         range_value.configure(text=f"{v1}-{v2}")
+        _adjust_box_width(coef_label_range)
+        _adjust_box_width(range_value)
 
     def move_marker(event):
         x = min(max(event.x, padding), width + padding - marker_w)
@@ -323,10 +334,14 @@ def open_bid_window(parent=None, log_bet=None, center_price=None, table_parent=N
         if p is None:
             coef_label_price.configure(text="-")
             price_value.configure(text="-")
+            _adjust_box_width(coef_label_price)
+            _adjust_box_width(price_value)
             return
         coef = round(max(1, 95 / (p * 100)), 2)
         coef_label_price.configure(text=str(coef))
         price_value.configure(text=str(v))
+        _adjust_box_width(coef_label_price)
+        _adjust_box_width(price_value)
 
     def move_price_marker(event):
         x = min(max(event.x, padding), width + padding - marker_w)
