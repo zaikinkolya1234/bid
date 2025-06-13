@@ -1,10 +1,23 @@
 import datetime
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.ticker import FuncFormatter
 from bid.ui import styles as ux
+
+_session = requests.Session()
+_retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+_adapter = HTTPAdapter(max_retries=_retry)
+_session.mount("https://", _adapter)
+
+
+def _get_json(url):
+    response = _session.get(url, timeout=10)
+    response.raise_for_status()
+    return response.json()
 
 
 def _prepare_frame(frame):
@@ -28,7 +41,7 @@ def fetch_moex_last_price(ticker: str) -> int:
         f"securities/{symbol}.json"
     )
     try:
-        data = requests.get(url, timeout=10).json()
+        data = _get_json(url)
         columns = data["marketdata"]["columns"]
         board_idx = columns.index("BOARDID")
         last_idx = columns.index("LAST")
@@ -53,7 +66,7 @@ def fetch_intraday_prices(ticker: str):
             "https://iss.moex.com/iss/history/engines/stock/markets/shares/"
             f"securities/{symbol}.json?iss.meta=off&history.columns=TRADEDATE&sort_order=desc&limit=1"
         )
-        resp = requests.get(date_url, timeout=10).json()
+        resp = _get_json(date_url)
         last_date = resp.get("history", {}).get("data", [[None]])[0][0]
         if last_date is None:
             raise ValueError("no trade date")
@@ -66,7 +79,7 @@ def fetch_intraday_prices(ticker: str):
         f"securities/{symbol}/candles.json?interval=10&from={last_date}&till={last_date}&boardid=TQBR"
     )
     try:
-        data = requests.get(url, timeout=10).json()
+        data = _get_json(url)
         candles = data.get("candles", {}).get("data", [])
         if not candles:
             raise ValueError("no candle data")
