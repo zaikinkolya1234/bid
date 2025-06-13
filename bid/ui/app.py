@@ -903,6 +903,7 @@ def run_app():
         box.pack(side="left", padx=5)
         value = ctk.CTkLabel(box, text="—" if "Диапазон" in label_text else "-")
         ux.style_label(value, 12)
+        value.configure(bg_color="transparent")
         value.pack(padx=6, pady=2)
         return value
 
