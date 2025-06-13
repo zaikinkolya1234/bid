@@ -10,6 +10,14 @@ from bid.ui import styles as ux
 CRYPTO_IDS = {
     "BTC": "bitcoin",
     "ETH": "ethereum",
+    "USDT": "tether",
+    "BNB": "binancecoin",
+    "SOL": "solana",
+    "USDC": "usd-coin",
+    "XRP": "ripple",
+    "TON": "the-open-network",
+    "ADA": "cardano",
+    "DOGE": "dogecoin",
 }
 
 

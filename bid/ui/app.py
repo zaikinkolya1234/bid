@@ -41,6 +41,14 @@ try:
     chmf_price = fetch_moex_last_price("CHMF")
     btc_price = fetch_crypto_last_price("BTC")
     eth_price = fetch_crypto_last_price("ETH")
+    usdt_price = fetch_crypto_last_price("USDT")
+    bnb_price = fetch_crypto_last_price("BNB")
+    sol_price = fetch_crypto_last_price("SOL")
+    usdc_price = fetch_crypto_last_price("USDC")
+    xrp_price = fetch_crypto_last_price("XRP")
+    ton_price = fetch_crypto_last_price("TON")
+    ada_price = fetch_crypto_last_price("ADA")
+    doge_price = fetch_crypto_last_price("DOGE")
     if btc_price == 0 or eth_price == 0:
         raise ValueError("crypto price unavailable")
     CENTER1, MIN1, MAX1 = sber_price, sber_price - 10, sber_price + 10
@@ -55,6 +63,22 @@ try:
     CENTER10, MIN10, MAX10 = sngs_price, sngs_price - 10, sngs_price + 10
     CENTER11, MIN11, MAX11 = mtss_price, mtss_price - 10, mtss_price + 10
     CENTER12, MIN12, MAX12 = chmf_price, chmf_price - 10, chmf_price + 10
+    delta_usdt = max(1, int(usdt_price * 0.02))
+    delta_bnb = max(1, int(bnb_price * 0.02))
+    delta_sol = max(1, int(sol_price * 0.02))
+    delta_usdc = max(1, int(usdc_price * 0.02))
+    delta_xrp = max(1, int(xrp_price * 0.02))
+    delta_ton = max(1, int(ton_price * 0.02))
+    delta_ada = max(1, int(ada_price * 0.02))
+    delta_doge = max(1, int(doge_price * 0.02))
+    CENTER13, MIN13, MAX13 = usdt_price, usdt_price - delta_usdt, usdt_price + delta_usdt
+    CENTER14, MIN14, MAX14 = bnb_price, bnb_price - delta_bnb, bnb_price + delta_bnb
+    CENTER15, MIN15, MAX15 = sol_price, sol_price - delta_sol, sol_price + delta_sol
+    CENTER16, MIN16, MAX16 = usdc_price, usdc_price - delta_usdc, usdc_price + delta_usdc
+    CENTER17, MIN17, MAX17 = xrp_price, xrp_price - delta_xrp, xrp_price + delta_xrp
+    CENTER18, MIN18, MAX18 = ton_price, ton_price - delta_ton, ton_price + delta_ton
+    CENTER19, MIN19, MAX19 = ada_price, ada_price - delta_ada, ada_price + delta_ada
+    CENTER20, MIN20, MAX20 = doge_price, doge_price - delta_doge, doge_price + delta_doge
 except Exception as e:
     print(f"Ошибка при получении цен: {e}")
     CENTER1, MIN1, MAX1 = 270, 260, 280
@@ -91,6 +115,14 @@ df_type9 = initialize_data(CENTER9, MIN9, MAX9)
 df_type10 = initialize_data(CENTER10, MIN10, MAX10)
 df_type11 = initialize_data(CENTER11, MIN11, MAX11)
 df_type12 = initialize_data(CENTER12, MIN12, MAX12)
+df_type13 = initialize_data(CENTER13, MIN13, MAX13)
+df_type14 = initialize_data(CENTER14, MIN14, MAX14)
+df_type15 = initialize_data(CENTER15, MIN15, MAX15)
+df_type16 = initialize_data(CENTER16, MIN16, MAX16)
+df_type17 = initialize_data(CENTER17, MIN17, MAX17)
+df_type18 = initialize_data(CENTER18, MIN18, MAX18)
+df_type19 = initialize_data(CENTER19, MIN19, MAX19)
+df_type20 = initialize_data(CENTER20, MIN20, MAX20)
 price_table1 = initialize_table(CENTER1)
 price_table2 = initialize_table(CENTER2)
 price_table3 = initialize_table(CENTER3)
@@ -103,6 +135,14 @@ price_table9 = initialize_table(CENTER9)
 price_table10 = initialize_table(CENTER10)
 price_table11 = initialize_table(CENTER11)
 price_table12 = initialize_table(CENTER12)
+price_table13 = initialize_table(CENTER13)
+price_table14 = initialize_table(CENTER14)
+price_table15 = initialize_table(CENTER15)
+price_table16 = initialize_table(CENTER16)
+price_table17 = initialize_table(CENTER17)
+price_table18 = initialize_table(CENTER18)
+price_table19 = initialize_table(CENTER19)
+price_table20 = initialize_table(CENTER20)
 last_range = [None, None]
 
 
@@ -122,6 +162,14 @@ def add_to_history(bet_range, amount, coefficient, bet_type: str):
         10: "Сургутнефтегаз",
         11: "МТС",
         12: "Северсталь",
+        13: "Tether",
+        14: "Binance Coin",
+        15: "Solana",
+        16: "USD Coin",
+        17: "XRP",
+        18: "Toncoin",
+        19: "Cardano",
+        20: "Dogecoin",
     }
     company = company_map.get(current_type, "-")
     entry = {
@@ -206,6 +254,14 @@ def update_coef_label():
             10: df_type10,
             11: df_type11,
             12: df_type12,
+            13: df_type13,
+            14: df_type14,
+            15: df_type15,
+            16: df_type16,
+            17: df_type17,
+            18: df_type18,
+            19: df_type19,
+            20: df_type20,
         }
         df = df_map.get(current_type)
         coef = calculate_coefficient(df, v1, v2)
@@ -254,6 +310,8 @@ def on_bet_click():
         global df_type1, df_type2, df_type3, df_type4
         global df_type5, df_type6, df_type7, df_type8
         global df_type9, df_type10, df_type11, df_type12
+        global df_type13, df_type14, df_type15, df_type16
+        global df_type17, df_type18, df_type19, df_type20
         df_map = {
             1: df_type1,
             2: df_type2,
@@ -267,6 +325,14 @@ def on_bet_click():
             10: df_type10,
             11: df_type11,
             12: df_type12,
+            13: df_type13,
+            14: df_type14,
+            15: df_type15,
+            16: df_type16,
+            17: df_type17,
+            18: df_type18,
+            19: df_type19,
+            20: df_type20,
         }
         center_map = {
             1: CENTER1,
@@ -281,6 +347,14 @@ def on_bet_click():
             10: CENTER10,
             11: CENTER11,
             12: CENTER12,
+            13: CENTER13,
+            14: CENTER14,
+            15: CENTER15,
+            16: CENTER16,
+            17: CENTER17,
+            18: CENTER18,
+            19: CENTER19,
+            20: CENTER20,
         }
         df = df_map.get(current_type)
         center = center_map.get(current_type)
@@ -309,6 +383,22 @@ def on_bet_click():
             df_type11 = df_new
         elif current_type == 12:
             df_type12 = df_new
+        elif current_type == 13:
+            df_type13 = df_new
+        elif current_type == 14:
+            df_type14 = df_new
+        elif current_type == 15:
+            df_type15 = df_new
+        elif current_type == 16:
+            df_type16 = df_new
+        elif current_type == 17:
+            df_type17 = df_new
+        elif current_type == 18:
+            df_type18 = df_new
+        elif current_type == 19:
+            df_type19 = df_new
+        elif current_type == 20:
+            df_type20 = df_new
         coef = float(coef_value.cget("text"))
         add_to_history(
             (round(last_range[0] - 0.51, 2), round(last_range[1] + 0.50, 2)),
@@ -376,6 +466,14 @@ def update_bet_table():
         10: df_type10,
         11: df_type11,
         12: df_type12,
+        13: df_type13,
+        14: df_type14,
+        15: df_type15,
+        16: df_type16,
+        17: df_type17,
+        18: df_type18,
+        19: df_type19,
+        20: df_type20,
     }
     df = df_map.get(current_type)
     if df is None:
@@ -783,6 +881,246 @@ def switch_view(view):
         )
         embedded_bid_frame.pack(pady=10, fill="x")
         bet_frame.pack(fill="both", expand=True)
+    elif view == "usdt":
+        current_type = 13
+        currency_symbol = "$"
+        current_center = CENTER13
+        min_val, max_val = MIN13, MAX13
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: USDT")
+        range_question_label.configure(text="Курс USDT")
+        plot_crypto_price_chart("USDT", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER13 - 2), val_to_x(CENTER13 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER13,
+            table=price_table13,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "bnb":
+        current_type = 14
+        currency_symbol = "$"
+        current_center = CENTER14
+        min_val, max_val = MIN14, MAX14
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: BNB")
+        range_question_label.configure(text="Курс BNB")
+        plot_crypto_price_chart("BNB", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER14 - 2), val_to_x(CENTER14 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER14,
+            table=price_table14,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "sol":
+        current_type = 15
+        currency_symbol = "$"
+        current_center = CENTER15
+        min_val, max_val = MIN15, MAX15
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: SOL")
+        range_question_label.configure(text="Курс SOL")
+        plot_crypto_price_chart("SOL", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER15 - 2), val_to_x(CENTER15 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER15,
+            table=price_table15,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "usdc":
+        current_type = 16
+        currency_symbol = "$"
+        current_center = CENTER16
+        min_val, max_val = MIN16, MAX16
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: USDC")
+        range_question_label.configure(text="Курс USDC")
+        plot_crypto_price_chart("USDC", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER16 - 2), val_to_x(CENTER16 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER16,
+            table=price_table16,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "xrp":
+        current_type = 17
+        currency_symbol = "$"
+        current_center = CENTER17
+        min_val, max_val = MIN17, MAX17
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: XRP")
+        range_question_label.configure(text="Курс XRP")
+        plot_crypto_price_chart("XRP", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER17 - 2), val_to_x(CENTER17 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER17,
+            table=price_table17,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "ton":
+        current_type = 18
+        currency_symbol = "$"
+        current_center = CENTER18
+        min_val, max_val = MIN18, MAX18
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: TON")
+        range_question_label.configure(text="Курс TON")
+        plot_crypto_price_chart("TON", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER18 - 2), val_to_x(CENTER18 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER18,
+            table=price_table18,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "ada":
+        current_type = 19
+        currency_symbol = "$"
+        current_center = CENTER19
+        min_val, max_val = MIN19, MAX19
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: ADA")
+        range_question_label.configure(text="Курс ADA")
+        plot_crypto_price_chart("ADA", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER19 - 2), val_to_x(CENTER19 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER19,
+            table=price_table19,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
+    elif view == "doge":
+        current_type = 20
+        currency_symbol = "$"
+        current_center = CENTER20
+        min_val, max_val = MIN20, MAX20
+        unit = pixel_range / (max_val - min_val)
+        type_label.configure(text="Выбран: DOGE")
+        range_question_label.configure(text="Курс DOGE")
+        plot_crypto_price_chart("DOGE", chart_frame)
+        draw_axis_labels()
+        x1, x2 = val_to_x(CENTER20 - 2), val_to_x(CENTER20 + 2)
+        canvas.coords(marker_from, x1, 15, x1 + marker_width, 35)
+        canvas.coords(marker_to, x2, 15, x2 + marker_width, 35)
+        entry_bet.delete(0, "end")
+        update_coef_label()
+        update_bet_table()
+        if embedded_bid_frame:
+            embedded_bid_frame.destroy()
+        if embedded_bid_table_frame:
+            embedded_bid_table_frame.destroy()
+        embedded_bid_frame, embedded_bid_table_frame, _ = open_bid_window(
+            parent=left_side,
+            table_parent=right_side,
+            log_bet=lambda r, a, c, kind: add_to_history(r, a, c, kind),
+            center_price=CENTER20,
+            table=price_table20,
+            axis_width=pixel_range,
+        )
+        embedded_bid_frame.pack(pady=10, fill="x")
+        bet_frame.pack(fill="both", expand=True)
     elif view == "history":
         update_history_view()
         history_frame.pack(fill="both", expand=True)
@@ -852,7 +1190,18 @@ def run_app():
 
     crypto_select_frame = ctk.CTkFrame(main_container)
     ux.style_frame(crypto_select_frame)
-    for txt, val in [("BTC", "btc"), ("ETH", "eth")]:
+    for txt, val in [
+        ("BTC", "btc"),
+        ("ETH", "eth"),
+        ("USDT", "usdt"),
+        ("BNB", "bnb"),
+        ("SOL", "sol"),
+        ("USDC", "usdc"),
+        ("XRP", "xrp"),
+        ("TON", "ton"),
+        ("ADA", "ada"),
+        ("DOGE", "doge"),
+    ]:
         cb = ctk.CTkButton(crypto_select_frame, text=txt, command=lambda v=val: switch_view(v))
         ux.style_button(cb)
         cb.pack(pady=5, padx=20, anchor="w")
