@@ -75,7 +75,10 @@ def style_textbox(textbox: ctk.CTkTextbox, size=BASE_FONT_SIZE):
 
 def style_box_frame(frame: ctk.CTkFrame):
     frame.configure(
-        fg_color="transparent",
+        # Fill with the same background color as surrounding widgets so that
+        # labels placed inside the frame don't create visible sharp corners at
+        # the rounded edges.
+        fg_color=BG_COLOR,
         border_color=BORDER_COLOR,
         border_width=2,
         corner_radius=CORNER_RADIUS
