@@ -9,15 +9,26 @@ from matplotlib.ticker import FuncFormatter
 from bid.ui import styles as ux
 
 _session = requests.Session()
-_retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+_retry = Retry(
+    total=2,
+    connect=2,
+    read=2,
+    backoff_factor=0.5,
+    status_forcelist=[429, 500, 502, 503, 504],
+)
 _adapter = HTTPAdapter(max_retries=_retry)
 _session.mount("https://", _adapter)
+_session.mount("http://", _adapter)
 
 
 def _get_json(url):
-    response = _session.get(url, timeout=10)
-    response.raise_for_status()
-    return response.json()
+    """Fetch JSON data from *url* with sane timeouts."""
+    try:
+        response = _session.get(url, timeout=(5, 5))
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as exc:
+        raise RuntimeError(f"HTTP request failed: {exc}") from exc
 
 
 def _prepare_frame(frame):
