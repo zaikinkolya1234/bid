@@ -33,6 +33,30 @@ CRYPTO_IDS = {
     "DOGE": "dogecoin",
 }
 
+# --- caching ---------------------------------------------------------------
+_PRICE_CACHE = {}
+_CACHE_TIMESTAMP = None
+
+# Cache for intraday price charts: {ticker: (timestamp, times, prices)}
+_CHART_CACHE = {}
+
+
+def _update_price_cache():
+    """Fetch prices for all known coins in one request."""
+    ids = ",".join(CRYPTO_IDS.values())
+    url = (
+        "https://api.coingecko.com/api/v3/simple/price"
+        f"?ids={ids}&vs_currencies=usd"
+    )
+    data = _get_json(url)
+    now = datetime.datetime.utcnow()
+    for ticker, coin_id in CRYPTO_IDS.items():
+        price = data.get(coin_id, {}).get("usd")
+        if price is not None:
+            _PRICE_CACHE[ticker] = round(float(price))
+    global _CACHE_TIMESTAMP
+    _CACHE_TIMESTAMP = now
+
 
 def _prepare_frame(frame):
     """Remove previous chart widget from *frame* if present."""
@@ -46,7 +70,22 @@ def _prepare_frame(frame):
 
 def fetch_crypto_last_price(ticker: str) -> int:
     """Return the last known USD price for the given crypto ticker."""
-    coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
+    ticker = ticker.upper()
+    global _CACHE_TIMESTAMP
+    now = datetime.datetime.utcnow()
+    if (
+        _CACHE_TIMESTAMP is None
+        or (now - _CACHE_TIMESTAMP).total_seconds() > 60
+        or ticker not in _PRICE_CACHE
+    ):
+        try:
+            _update_price_cache()
+        except Exception as e:
+            print(f"Ошибка при обновлении цен: {e}")
+    price = _PRICE_CACHE.get(ticker)
+    if price is not None:
+        return price
+    coin_id = CRYPTO_IDS.get(ticker, ticker.lower())
     url = (
         "https://api.coingecko.com/api/v3/simple/price"
         f"?ids={coin_id}&vs_currencies=usd"
@@ -56,7 +95,10 @@ def fetch_crypto_last_price(ticker: str) -> int:
         price = data.get(coin_id, {}).get("usd")
         if price is None:
             raise ValueError("price not found")
-        return round(float(price))
+        price = round(float(price))
+        _PRICE_CACHE[ticker] = price
+        _CACHE_TIMESTAMP = now
+        return price
     except Exception as e:
         print(f"Ошибка при получении цены {ticker}: {e}")
         return 0
@@ -64,7 +106,13 @@ def fetch_crypto_last_price(ticker: str) -> int:
 
 def fetch_intraday_prices(ticker: str):
     """Return time and price arrays for the last day in USD from Coingecko."""
-    coin_id = CRYPTO_IDS.get(ticker.upper(), ticker.lower())
+    ticker = ticker.upper()
+    now = datetime.datetime.utcnow()
+    cached = _CHART_CACHE.get(ticker)
+    if cached and (now - cached[0]).total_seconds() < 3600:
+        return cached[1], cached[2]
+
+    coin_id = CRYPTO_IDS.get(ticker, ticker.lower())
     url = (
         f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart"
         "?vs_currency=usd&days=1"
@@ -72,8 +120,12 @@ def fetch_intraday_prices(ticker: str):
     try:
         data = _get_json(url)
         prices = sorted(data.get("prices", []), key=lambda x: x[0])
-        times = [datetime.datetime.fromtimestamp(p[0] / 1000).strftime("%H:%M") for p in prices]
+        times = [
+            datetime.datetime.fromtimestamp(p[0] / 1000).strftime("%H:%M")
+            for p in prices
+        ]
         vals = [p[1] for p in prices]
+        _CHART_CACHE[ticker] = (now, times, vals)
         return times, vals
     except Exception as e:
         print(f"Ошибка при получении графика {ticker}: {e}")
